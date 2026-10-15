@@ -1,5 +1,7 @@
 // Teste de navegador: abre o jogo (file://) e joga partidas inteiras clicando em botões ao acaso.
 // Uso: node test/ui.js [partidas=3] [pastaCapturas]   (precisa de playwright-core e Chromium)
+// Cada partida usa um nº diferente de pessoas (1, 2, 5, 3, 4... o resto vira bot).
+const HUMANOS = [1, 2, 5, 3, 4];
 const path = require('path');
 const fs = require('fs');
 let pw; try { pw = require('playwright-core'); } catch (e) { pw = require(path.join(process.env.PW_DIR || '/tmp/claude-0/pw', 'node_modules/playwright-core')); }
@@ -16,7 +18,7 @@ const URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
     await pg.goto(URL);
     const shot = async n => { if (SHOTS && g === 0) { fs.mkdirSync(SHOTS, { recursive: true }); await pg.screenshot({ path: path.join(SHOTS, n + '.png') }); } };
     await shot('01-inicio');
-    await pg.click('[data-a=iniciarDeck]'); await pg.click('[data-a=sortear]'); await shot('02-setup');
+    await pg.click('[data-a=iniciarDeck]'); await pg.click('[data-a=sortear]'); await pg.click(`[data-a=humanos][data-v="${HUMANOS[g % HUMANOS.length]}"]`); await shot('02-setup');
     await pg.click('[data-a=comecar]');
     let passos = 0, ult = '', vistos = new Set();
     for (; passos < 600; passos++) {
@@ -46,7 +48,7 @@ const URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
     if (fim !== 'fim') { falhas++; erros.push('não terminou: ' + ult); }
     if (fim === 'fim') { await pg.click('[data-a=revelar]'); await shot('99-final'); }
     const r = await pg.evaluate(() => ({ trilha: __jogo.U.S.trilha, meta: __jogo.U.S.final && __jogo.U.S.final.meta, vit: __jogo.U.S.final && __jogo.U.S.final.vencedores }));
-    console.log(`partida ${g + 1}: fase ${fim}, ${passos} cliques, trilha ${r.trilha}, venc ${JSON.stringify(r.vit)}${erros.length ? ' ERROS: ' + erros.slice(0, 5).join(' | ') : ''}`);
+    console.log(`partida ${g + 1} (${HUMANOS[g % HUMANOS.length]} pessoa(s)): fase ${fim}, ${passos} cliques, trilha ${r.trilha}, venc ${JSON.stringify(r.vit)}${erros.length ? ' ERROS: ' + erros.slice(0, 5).join(' | ') : ''}`);
     if (erros.length) falhas++;
     await pg.close();
   }

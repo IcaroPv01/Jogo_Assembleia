@@ -43,19 +43,25 @@
   const porId = (lista, id) => lista.find(x => x.id === id);
 
   // ---- Criação ----
-  function novoJogo(dados, { paises, nomes = [], seed, relogio = 'aviso' }) {
+  function novoJogo(dados, { paises, nomes = [], bots = [], seed, relogio = 'aviso' }) {
     if (!paises || paises.length !== R.JOGADORES) throw new Error('Precisa de ' + R.JOGADORES + ' países.');
     const s = { v: 2, rng: (seed ?? Math.floor(Math.random() * 4294967296)) >>> 0, relogio };
     s.seed = s.rng;
-    s.assentos = paises.map((pid, i) => ({ i, pais: pid, jogador: (nomes[i] || '').trim() }));
+    s.assentos = paises.map((pid, i) => ({ i, pais: pid, jogador: bots[i] ? '' : (nomes[i] || '').trim(), bot: !!bots[i] }));
     s.rodada = 0;
     s.fase = 'objetivos';
     s.presidente = Math.floor(rnd(s) * R.JOGADORES);
     s.votoModo = null;
     s.trilha = 0;
     s.pts = s.assentos.map(a => (porId(dados.paises, a.pais).modelo || {}).inicio ? 1 : 0);
+    // bots não recebem objetivo "manual" (a mesa confirmaria no fim, e bot não propõe imposto nem parceria de energia)
     const objs = embaralha(s, dados.objetivos.map(o => o.id));
-    s.objetivos = s.assentos.map((_, i) => objs[i]);
+    const manual = id => porId(dados.objetivos, id).verifica === 'manual';
+    const autos = objs.filter(id => !manual(id)), resto = objs.filter(id => manual(id));
+    s.objetivos = [];
+    s.assentos.forEach(a => { if (a.bot) s.objetivos[a.i] = autos.shift(); });
+    const pool = embaralha(s, autos.concat(resto));
+    s.assentos.forEach(a => { if (!a.bot) s.objetivos[a.i] = pool.shift(); });
     s.objManual = {};
     // cada país leva as suas 3 cartas de ação; as dos 3 países fora da mesa viram a pilha de compra
     s.mao = s.assentos.map(a => dados.acoes.filter(c => c.pais === a.pais).map(c => c.id));
@@ -219,7 +225,7 @@
       case 'voto_modo':
         if (s.fase !== 'presidencia') return erro('Fase errada.');
         s.votoModo = a.modo === 'fechado' ? 'fechado' : 'aberto';
-        log(s, `Voto ${s.votoModo}.`); return { ok: true };
+        log(s, `Voto ${s.votoModo}.${a.nota ? ' ' + a.nota : ''}`); return { ok: true };
 
       case 'avancar':
         if (s.fase === 'presidencia' && !s.votoModo) return erro('O presidente precisa escolher voto aberto ou fechado.');
@@ -233,13 +239,13 @@
         if (!s.mao[A].includes(cartaA) || !s.mao[B].includes(cartaB)) return erro('Carta não está na mão.');
         s.mao[A][s.mao[A].indexOf(cartaA)] = cartaB; s.mao[B][s.mao[B].indexOf(cartaB)] = cartaA;
         for (const [x, y] of [[A, B], [B, A]]) if (!s.est[x].parceiros.includes(y)) s.est[x].parceiros.push(y);
-        s.trocas.push({ a: A, b: B });
-        log(s, `Troca: ${nomePais(D, s, A)} ⇄ ${nomePais(D, s, B)}.`); return { ok: true };
+        s.trocas.push({ a: A, b: B, nota: a.nota || null });
+        log(s, `Troca: ${nomePais(D, s, A)} ⇄ ${nomePais(D, s, B)}.${a.nota ? ' ' + a.nota : ''}`); return { ok: true };
       }
 
       case 'passar': {
         if (s.fase !== 'jogar' || s.pend) return erro('Agora não.');
-        log(s, `${nomePais(D, s, seatDaVez(s))} passou.`);
+        log(s, `${nomePais(D, s, seatDaVez(s))} passou.${a.nota ? ' ' + a.nota : ''}`);
         avancaTurno(D, s); return { ok: true };
       }
 
@@ -251,12 +257,13 @@
         const carta = porId(D.acoes, a.carta);
         if ((carta.tipo === 'troca' || carta.tipo === 'media') && (a.parceiro == null || a.parceiro === seat)) return erro('Escolha outro país.');
         if (carta.tipo === 'troca') { // o parceiro decide; a carta passa para ele se aceitar
-          s.pend = { tipo: 'troca', quem: seat, parceiro: a.parceiro, carta: a.carta, resultado: null };
+          s.pend = { tipo: 'troca', quem: seat, parceiro: a.parceiro, carta: a.carta, resultado: null, nota: a.nota || null };
           return { ok: true };
         }
         s.mao[seat] = s.mao[seat].filter(c => c !== a.carta); s.descarte.push(a.carta);
         if (carta.tipo === 'pesada') { s.pts[seat] -= R.PESADA_CUSTO; s.est[seat].pesadas++; } // paga o custo (pode virar dívida)
-        novoVoto(s, { quem: seat, carta: a.carta, parceiro: a.parceiro ?? null });
+        novoVoto(s, { quem: seat, carta: a.carta, parceiro: a.parceiro ?? null, nota: a.nota || null, notas: {} });
+        if (a.nota) log(s, `${nomePais(D, s, seat)}: ${a.nota}`);
         return { ok: true };
       }
 
@@ -268,7 +275,7 @@
           const auto = !!h.leve_auto; // EUA, China, Portugal, Egito, Uruguai: o ponto vale mesmo se recusarem
           if (auto) s.pts[quem] += R.LEVE_PTS;
           log(s, `${nomePais(D, s, parceiro)} recusou a troca de ${nomePais(D, s, quem)}.${auto ? ` (${nomePais(D, s, quem)} ganha o ponto mesmo assim.)` : ''}`);
-          p.resultado = { aceita: false, ponto: auto ? R.LEVE_PTS : 0 };
+          p.resultado = { aceita: false, ponto: auto ? R.LEVE_PTS : 0, nota: a.nota || null };
         } else {
           if (!s.mao[parceiro].includes(a.cartaDevolve)) return erro('Escolha uma carta sua.');
           s.mao[quem].splice(s.mao[quem].indexOf(carta), 1);
@@ -279,7 +286,7 @@
           for (const [x, y] of [[quem, parceiro], [parceiro, quem]]) if (!s.est[x].parceiros.includes(y)) s.est[x].parceiros.push(y);
           s.trocas.push({ a: quem, b: parceiro });
           log(s, `Troca aceita: ${nomePais(D, s, quem)} ⇄ ${nomePais(D, s, parceiro)} (+${pts} para ${nomePais(D, s, quem)}).`);
-          p.resultado = { aceita: true, ponto: pts };
+          p.resultado = { aceita: true, ponto: pts, nota: a.nota || null };
         }
         return { ok: true };
       }
@@ -294,6 +301,7 @@
         const p = s.pend;
         if (!p || p.tipo !== 'voto' || p.resultado) return erro('Sem votação aberta.');
         if (a.votos) a.votos.forEach((v, i) => { p.votos[i] = !!v; }); else p.votos[a.seat] = !!a.voto;
+        if (a.notas) Object.keys(a.notas).forEach(k => { if (a.notas[k]) p.notas[k] = a.notas[k]; });
         if (p.votos.every(v => v !== null)) resolveVoto(D, s);
         return { ok: true };
       }
