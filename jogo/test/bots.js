@@ -39,6 +39,8 @@ function joga(seed, humanos = 0) {
       default: throw new Error('fase inesperada ' + s.fase);
     }
   }
+  const rel = JSON.parse(JSON.stringify(E.relatorio(D, s)));
+  if (!rel.detalhado || rel.eventos.length < 20 || rel.eventos.slice(-1)[0].pts.join() !== s.pts.join()) throw new Error('log incompleto');
   return s;
 }
 

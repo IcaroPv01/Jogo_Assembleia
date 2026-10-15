@@ -22,8 +22,25 @@
   function salva() { try { localStorage.setItem(KEY, JSON.stringify({ S: U.S })); } catch (e) { /* sem armazenamento: tudo bem */ } }
   function carrega() { try { const j = localStorage.getItem(KEY); return j ? JSON.parse(j) : null; } catch (e) { return null; } }
   function limpa() { try { localStorage.removeItem(KEY); } catch (e) { /* ok */ } }
+  // ---- logs das partidas (ficam no navegador; botão "Baixar log" gera um arquivo para análise) ----
+  const KEYLOGS = 'assembleia.economia.logs';
+  function lerLogs() { try { const j = localStorage.getItem(KEYLOGS); return j ? JSON.parse(j) : []; } catch (e) { return []; } }
+  function arquiva(S) { // guarda o log de uma partida terminada (as 5 últimas), sem repetir
+    try {
+      const id = S.seed + '-' + S.assentos.map(a => a.pais).join('');
+      const l = lerLogs().filter(x => x.id !== id);
+      l.push({ id, quando: new Date().toISOString(), log: E.relatorio(D, S) });
+      localStorage.setItem(KEYLOGS, JSON.stringify(l.slice(-5)));
+    } catch (e) { /* sem armazenamento: tudo bem */ }
+  }
+  function baixa(nomeArq, obj) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 1)], { type: 'application/json' }));
+    a.download = nomeArq; document.body.appendChild(a); a.click(); a.remove();
+  }
+  const stamp = () => new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
   function toast(t) { U.toast = t; setTimeout(() => { U.toast = null; render(); }, 3200); }
-  function A(a) { const r = E.acao(D, U.S, a); if (!r.ok) toast(r.erro); salva(); render(); return r; }
+  function A(a) { const r = E.acao(D, U.S, a); if (!r.ok) toast(r.erro); salva(); if (U.S.fase === 'fim') arquiva(U.S); render(); return r; }
 
   // ---------- relógio das fases (só aviso; decisoes.md 2.1) ----------
   const GRUPO = { presidencia: 'presidencia', crise: 'crise', debate: 'debate', troca: 'troca', jogar: 'jogar' };
@@ -148,6 +165,7 @@
       <div class="baralhos"><button class="bar ativo" data-a="iniciarDeck"><span class="tag">jogável (versão de teste)</span>${C.icone('coin', 'xg')}<h3>Economia</h3><div class="mudo peq">8 países · 11 crises · 24 ações · 10 objetivos</div></button>
       ${outros.map(([n, t]) => `<div class="bar off"><span class="tag">${t.startsWith('Fase') ? 'fase 2' : 'em breve'}</span><h3>${n}</h3><div class="mudo peq">${t}</div></div>`).join('')}</div>
       ${salvo && salvo.S && salvo.S.fase !== 'fim' ? `<p><button class="btn" data-a="continuar">Continuar partida salva (rodada ${salvo.S.rodada || 0})</button></p>` : ''}
+      ${lerLogs().length || (salvo && salvo.S) ? `<p><button class="btn sec" data-a="baixarTudo">Baixar log das últimas partidas (${lerLogs().length + (salvo && salvo.S && salvo.S.fase !== 'fim' ? 1 : 0)})</button></p>` : ''}
       <p class="rodape-t">Versão de teste · textos e força dos países em revisão · <a style="color:var(--ouro)" href="../">cartas para imprimir</a></p></div>`;
   }
 
@@ -385,7 +403,7 @@
         <td class="peq">${esc(l.objetivo.texto)}<br>${l.objetivo.verifica === 'manual' ? `<span class="mudo">A mesa confirma:</span> <button class="btn sim peq ${S.objManual[l.seat] ? 'sel' : ''}" data-a="confObj" data-s="${l.seat}" data-v="1">Cumpriu</button> <button class="btn nao peq ${S.objManual[l.seat] === false ? 'sel' : ''}" data-a="confObj" data-s="${l.seat}" data-v="0">Não</button>` : (l.cumpriu ? '<b class="dif">cumprido</b>' : '<b class="dif neg">não cumprido</b>')}</td>
         <td>${sinal(l.pontosObj)}</td><td>${sinal(l.bonus)}</td><td><b style="font-size:1.3em;color:var(--ouro)">${l.total}</b></td></tr>`).join('')}</table>
       <p class="peq mudo">Empate: vence quem ajudou a resolver mais crises; se continuar empatado, dividem a vitória.</p>
-      <div class="acoes"><button class="btn grande" data-a="jogarNovo">Jogar de novo</button><button class="btn sec" data-a="menuSair">Menu inicial</button></div>`;
+      <div class="acoes"><button class="btn grande" data-a="jogarNovo">Jogar de novo</button><button class="btn" data-a="baixarLog">Baixar log desta partida</button><button class="btn sec" data-a="menuSair">Menu inicial</button></div>`;
   }
 
   // ---------- modal ----------
@@ -399,7 +417,7 @@
       <p><b>Crise:</b> com as <b>ajudas</b> pedidas pela carta (2 ou 3) ela é <b>resolvida</b> (+5 na trilha); com 1 ou mais ao fim do prazo, <b>atenuada</b> (+3). Não resolvida: −${Math.abs(R.PTS_NAO_RESOLVIDA)}. Cada país que ajudou ganha +${R.PTS_AJUDANTE} ponto. A crise dura a rodada em que aparece e mais uma.</p>
       <p>Se a trilha chegar à casa <b>${R.META}</b> até o fim da rodada 5, todos ganham +${R.BONUS_META} pontos. Vence quem tiver mais <b>pontos individuais</b> (ajudas, trocas, objetivo secreto, bônus). Dá para ganhar sozinho mesmo sem a META.</p></div>`;
     else if (m.t === 'diario') corpo = `<div class="ficha" style="max-width:44em"><h2>Diário da mesa</h2>${U.S.log.slice().reverse().map(l => `<div class="peq"><span class="mudo">R${l.r}</span> ${esc(l.txt)}</div>`).join('') || '<p class="mudo">Nada ainda.</p>'}</div>`;
-    else if (m.t === 'sair') corpo = `<div class="ficha"><h2>Sair da partida?</h2><p>A partida fica salva neste navegador e dá para continuar depois.</p><div class="acoes"><button class="btn grande" data-a="voltarInicio">Menu inicial</button><button class="btn nao" data-a="descartar">Apagar partida</button></div></div>`;
+    else if (m.t === 'sair') corpo = `<div class="ficha"><h2>Sair da partida?</h2><p>A partida fica salva neste navegador e dá para continuar depois.</p><div class="acoes"><button class="btn grande" data-a="voltarInicio">Menu inicial</button><button class="btn" data-a="baixarLog">Baixar log da partida</button><button class="btn nao" data-a="descartar">Apagar partida</button></div></div>`;
     else if (m.t === 'pais') { const p = E.porId(D.paises, m.id); corpo = `${C.pais(p, 380)}<div class="ficha"><h2>${esc(p.nome)}</h2><dl><dt>Força</dt><dd>${p.forca} de 6 ${p.provisorio ? '(provisória)' : ''}</dd><dt>Capital</dt><dd>${esc(p.capital)}</dd><dt>Moeda</dt><dd>${esc(p.moeda)}</dd><dt>Sistema</dt><dd>${esc(p.sistema)}</dd><dt>Figura</dt><dd>${esc(p.figura)}</dd></dl><p>${esc(p.resumo)}</p><b>Habilidades</b><ul>${p.habilidades.map(h => `<li>${esc(h)}</li>`).join('')}</ul></div>`; }
     else if (m.t === 'evento') { const e = evt(m.id); corpo = `${C.evento(e, 380)}<div class="ficha"><h2>${esc(e.titulo)} ${e.titulo.includes(e.ano) ? '' : `<span class="mudo">${esc(e.ano)}</span>`}</h2><p>${esc(e.descricao)}</p><b>Tópicos de debate</b><ul>${e.topicos.map(t => `<li>${esc(t)}</li>`).join('')}</ul><p><b>Para resolver (+${e.pts_resolver}):</b> ${esc(e.requisito)}</p><p><b>Para atenuar (+${e.pts_atenuar}):</b> ${esc(e.requisito_atenuar)}</p><p class="mudo peq">Resolve com ${e.n} ajudas (cartas média ou pesada aprovadas em voto). Com 1 ou mais fica atenuada.</p></div>`; }
     return `<div class="modal" data-a="fecharModal"><div class="conteudo" data-a="nada">${corpo}<button class="fechar" data-a="fecharModal" aria-label="Fechar">×</button></div></div>`;
@@ -470,7 +488,13 @@
     votoOk() { A({ tipo: 'voto_ok' }); },
     revelar() { U.revelado = true; },
     confObj(d) { A({ tipo: 'confirmar_objetivo', seat: +d.s, cumpriu: d.v === '1' }); },
-    jogarNovo() { limpa(); U.S = null; U.tela = 'setup'; U.sel = []; },
+    jogarNovo() { U.S = null; U.tela = 'setup'; U.sel = []; }, // o log da partida terminada continua guardado
+    baixarLog() { baixa(`assembleia-log-${stamp()}-${U.S.seed}.json`, E.relatorio(D, U.S)); toast('Log baixado. Envie o arquivo no chat do projeto.'); },
+    baixarTudo() {
+      const sv = carrega(), todos = lerLogs().map(x => x.log);
+      if (sv && sv.S && !todos.some(l => l.seed === sv.S.seed && l.mesa.map(m => m.pais).join() === sv.S.assentos.map(a => a.pais).join())) todos.push(E.relatorio(D, sv.S)); // partida salva ainda não arquivada (em andamento ou de versão anterior)
+      baixa(`assembleia-logs-${stamp()}.json`, { formato: 'assembleia-logs-1', partidas: todos });
+    },
   };
   // as ações que mexem só na interface não passam por A(): re-renderiza aqui
   document.addEventListener('click', ev => {
@@ -506,6 +530,7 @@
     if (foco) { const el = $app.querySelector(`input[data-i="${foco[0]}"]`); if (el) { el.focus(); try { el.setSelectionRange(foco[1], foco[1]); } catch (e) { /* ok */ } } }
     tick();
   }
+  { const sv = carrega(); if (sv && sv.S && sv.S.fase === 'fim') arquiva(sv.S); }
   window.__jogo = { U, E, D, A, render };
   render();
 })();

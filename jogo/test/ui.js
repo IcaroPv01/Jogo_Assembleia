@@ -46,7 +46,15 @@ const URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
     }
     const fim = await pg.evaluate(() => __jogo.U.S.fase);
     if (fim !== 'fim') { falhas++; erros.push('não terminou: ' + ult); }
-    if (fim === 'fim') { await pg.click('[data-a=revelar]'); await shot('99-final'); }
+    if (fim === 'fim') {
+      await pg.click('[data-a=revelar]'); await shot('99-final');
+      // botão "Baixar log desta partida": o arquivo tem que ser JSON válido e completo
+      const [dl] = await Promise.all([pg.waitForEvent('download'), pg.click('[data-a=baixarLog]')]);
+      const f = path.join(require('os').tmpdir(), `log-${g}.json`); await dl.saveAs(f);
+      const lg = JSON.parse(fs.readFileSync(f, 'utf8'));
+      if (!lg.detalhado || lg.eventos.length < 20 || !lg.final) erros.push('log baixado incompleto');
+      if (SHOTS && g === 0) fs.copyFileSync(f, path.join(SHOTS, 'log-exemplo.json'));
+    }
     const r = await pg.evaluate(() => ({ trilha: __jogo.U.S.trilha, meta: __jogo.U.S.final && __jogo.U.S.final.meta, vit: __jogo.U.S.final && __jogo.U.S.final.vencedores }));
     console.log(`partida ${g + 1} (${HUMANOS[g % HUMANOS.length]} pessoa(s)): fase ${fim}, ${passos} cliques, trilha ${r.trilha}, venc ${JSON.stringify(r.vit)}${erros.length ? ' ERROS: ' + erros.slice(0, 5).join(' | ') : ''}`);
     if (erros.length) falhas++;

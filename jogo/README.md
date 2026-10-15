@@ -16,7 +16,11 @@ Versão jogável no navegador. **Uma tela só**, passa-e-joga (computador ou pro
 - `assets/flags`: bandeiras usadas.
 - `test/sim.js`: partidas com bots direto no motor (confere regras e mostra equilíbrio). `node test/sim.js 500 0.65`
 - `test/bots.js`: partidas só com os bots de `js/bot.js` (confere regras e mostra equilíbrio). `node test/bots.js 500`
+- `test/analisa_log.js`: resumo legível de um log baixado do jogo. `node test/analisa_log.js arquivo.json`
 - `test/ui.js`: abre no Chromium e joga partidas clicando ao acaso (precisa `playwright-core`).
+
+## Log da partida
+O motor guarda cada ação aceita (quem jogou qual carta, votos, trocas, pontos e trilha depois de cada ação, crise aberta) em `estado.hist`. `Engine.relatorio(D, estado)` monta o arquivo JSON (mesa, objetivos, crises, final, eventos, diário). No jogo: botão **Baixar log desta partida** no fim da partida e no menu "Sair"; na tela inicial, **Baixar log das últimas partidas** (guarda as 5 últimas no navegador). Para analisar: `node test/analisa_log.js arquivo.json`.
 
 ## Bots
 Na escolha dos países dá para marcar quantas pessoas jogam (1 a 5); os outros lugares viram bots. Bot não vê a mão nem o objetivo dos outros. Ele usa a própria mão, o próprio objetivo secreto e o que está na mesa. As decisões são funções do estado (sem sorteio escondido), então a tela mostra a jogada, a frase que explica e só depois manda a ação ao motor.
