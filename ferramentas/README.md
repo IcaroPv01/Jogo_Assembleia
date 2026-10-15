@@ -8,6 +8,8 @@ Serve aos 3 baralhos. Carta = 63x88 mm (poker). Bandeiras: HatScripts/circle-fla
 3. `python3 gen_pdf.py saida/economia` → `impressao.pdf` (A4, 3x3, marcas de corte). Imprimir em 100%.
    (precisa `pip install reportlab`)
 
+4. Tabuleiro (A3 ou 2×A4): `node gen_tabuleiro.js economia_baralho.json` e `python3 gen_pdf_tabuleiro.py saida/economia` → `tabuleiro_A3.pdf`, `tabuleiro_A4.pdf` (cole as 2 páginas lado a lado). Trilha de 14 casas (0 = início, 13 = META), mesa central e 5 lugares de delegado.
+
 ## JSON do baralho
 `baralho`: id, nome, sigla, cor, cor2, icone. `cartas`: lista de 3 tipos.
 - `carta`: `pais`|`evento`|`acao`|`objetivo` (formato fechado no Módulo 1, regras/decisoes.md §3)
