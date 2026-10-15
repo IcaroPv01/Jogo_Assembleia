@@ -11,6 +11,8 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
+  const VERSAO = '2026-10-15-bots-log'; // vai no arquivo de log, para saber com que regras a partida foi jogada
+
   // ---- Constantes de regra. Ajuste aqui, não espalhado no código. ----
   const R = {
     JOGADORES: 5, RODADAS: 5, MAO: 3, MAO_GRANDE: 4,
@@ -72,6 +74,7 @@
     s.crisesHist = [];
     s.est = s.assentos.map(() => ({ parceiros: [], acordos: 0, pesadas: 0, rodadasAprovadas: [], leveAceitas: 0, pedagioUsado: false, votoExtraUsado: false }));
     s.turno = null; s.pend = null; s.trocas = []; s.resumo = null; s.final = null; s.log = [];
+    s.hist = []; // histórico detalhado de ações (para o log da partida, ver relatorio())
     return s;
   }
 
@@ -215,7 +218,25 @@
   }
 
   // ---- Ações (único ponto de entrada da interface) ----
+  // Todas passam por aqui; cada ação aceita vira uma linha do histórico (s.hist) com os pontos e a trilha depois dela.
   function acao(D, s, a) {
+    const fase = s.fase, rodada = s.rodada, vez = s.turno ? seatDaVez(s) : null, pend0 = s.pend;
+    const res = acaoBase(D, s, a);
+    if (res.ok && s.hist) {
+      const e = { n: s.hist.length + 1, r: rodada, f: fase, t: a.tipo, ts: Date.now() };
+      for (const k of ['seat', 'carta', 'parceiro', 'modo', 'votos', 'notas', 'nota', 'aceita', 'cartaDevolve', 'a', 'b', 'cartaA', 'cartaB', 'cumpriu']) if (a[k] !== undefined && a[k] !== null) e[k] = a[k];
+      if (a.tipo === 'jogar' || a.tipo === 'passar') e.seat = vez;
+      if (a.tipo === 'jogar') { const c = porId(D.acoes, a.carta); if (c) e.tipoCarta = c.tipo; }
+      if (pend0) e.pend = { tipo: pend0.tipo, quem: pend0.quem, parceiro: pend0.parceiro ?? null, carta: pend0.carta };
+      const pr = s.pend || pend0; if (pr && pr.resultado) e.resultado = pr.resultado;
+      e.pres = s.presidente; e.modoVoto = s.votoModo; e.pts = s.pts.slice(); e.trilha = s.trilha;
+      e.crise = s.crise ? { id: s.crise.id, ajudas: Object.assign({}, s.crise.ajudas), penal: s.crise.penal } : null;
+      if (s.fase !== fase) e.proxFase = s.fase;
+      s.hist.push(e);
+    }
+    return res;
+  }
+  function acaoBase(D, s, a) {
     const erro = m => ({ ok: false, erro: m });
     switch (a.tipo) {
       case 'objetivos_ok':
@@ -353,5 +374,21 @@
     s.final = Object.assign(s.final || {}, { meta, linhas, ranking: ordenado.map(l => l.seat), vencedores });
   }
 
-  return { R, novoJogo, acao, ordemJogo, seatDaVez, porId, nomePais, paisDe, hab, maoMax, infoCrise, ehRodadaCrise, objetivoCumprido, podeJogar, totalAjudas, ajudantes, ultimaRodadaDaCrise, rnd, embaralha };
+  // ---- Log da partida (JSON para baixar e analisar o equilíbrio) ----
+  function relatorio(D, s) {
+    const mesa = s.assentos.map(a => {
+      const p = paisDe(D, s, a.i), o = porId(D.objetivos, s.objetivos[a.i]), l = s.final && s.final.linhas ? s.final.linhas.find(x => x.seat === a.i) : null;
+      return { seat: a.i, pais: p.id, nome: p.nome, forca: p.forca, bot: !!a.bot, jogador: a.jogador || null, habilidades: p.modelo || {},
+        objetivo: { id: o.id, texto: o.texto, pts: o.pts, verifica: o.verifica }, pontosAgora: s.pts[a.i], final: l ? { total: l.total, cumpriu: l.cumpriu, pontosObj: l.pontosObj, bonusMeta: l.bonus, crisesAjudadas: l.crises } : null };
+    });
+    const crises = s.crisesHist.concat(s.crise ? [Object.assign({ status: 'aberta' }, s.crise)] : []).map(c => {
+      const e = infoCrise(D, c);
+      return { id: c.id, titulo: e.titulo, n: e.n, abertaRodada: c.aberta, fechouNaRodada: c.fechouNaRodada ?? null, status: c.status, ajudas: c.ajudas, penal: c.penal, total: c.total ?? totalAjudas(c) };
+    });
+    return { formato: 'assembleia-log-1', versaoJogo: VERSAO, gerado: new Date().toISOString(), seed: s.seed, baralho: D.baralho.id, fase: s.fase, rodada: s.rodada, relogio: s.relogio,
+      trilha: s.trilha, meta: R.META, mesa, crises, final: s.final ? { meta: s.final.meta, vencedores: s.final.vencedores, ranking: s.final.ranking } : null,
+      regras: R, eventos: s.hist || [], diario: s.log, detalhado: !!(s.hist && s.hist.length) };
+  }
+
+  return { VERSAO, relatorio, R, novoJogo, acao, ordemJogo, seatDaVez, porId, nomePais, paisDe, hab, maoMax, infoCrise, ehRodadaCrise, objetivoCumprido, podeJogar, totalAjudas, ajudantes, ultimaRodadaDaCrise, rnd, embaralha };
 });
