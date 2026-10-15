@@ -9,12 +9,17 @@ Versão jogável no navegador. **Uma tela só**, passa-e-joga (computador ou pro
 - `index.html`, `css/jogo.css`: tela.
 - `js/engine.js`: **motor das regras** (sem tela, estado em JSON). Constantes de regra no topo (`R`).
 - `js/cartas.js`: desenho das cartas em HTML/CSS (mesmo visual aprovado do gerador de cartas).
+- `js/bot.js`: **bots** (funções puras: jogar, votar, trocar, escolher voto aberto/fechado). Cada decisão vem com uma frase curta que a tela mostra.
 - `js/ui.js`: interface (início, escolha de países, mesa, fases, telas de privacidade).
 - `dados/economia.js`: **gerado** por `montar_dados.js` (não editar à mão).
 - `montar_dados.js`: junta `economia/cartas.json` (textos), `paises/fichas.json` (fichas) e, se existir, `economia/paises.json` (Módulo 5: força final e habilidades). Rodar de novo quando esses arquivos mudarem: `node jogo/montar_dados.js [cartas.json] [fichas.json] [paises.json]`.
 - `assets/flags`: bandeiras usadas.
 - `test/sim.js`: partidas com bots direto no motor (confere regras e mostra equilíbrio). `node test/sim.js 500 0.65`
+- `test/bots.js`: partidas só com os bots de `js/bot.js` (confere regras e mostra equilíbrio). `node test/bots.js 500`
 - `test/ui.js`: abre no Chromium e joga partidas clicando ao acaso (precisa `playwright-core`).
+
+## Bots
+Na escolha dos países dá para marcar quantas pessoas jogam (1 a 5); os outros lugares viram bots. Bot não vê a mão nem o objetivo dos outros. Ele usa a própria mão, o próprio objetivo secreto e o que está na mesa. As decisões são funções do estado (sem sorteio escondido), então a tela mostra a jogada, a frase que explica e só depois manda a ação ao motor.
 
 ## Celular depois
 O motor não conhece a tela. Para uma versão em celulares: cada celular manda as mesmas ações (`votar`, `jogar`, `assinar`, `passar`...) para o mesmo estado, e vê só a sua parte (objetivo, mão, voto). A `ui.js` de uma tela só já separa o que é privado atrás de telas de "passe a tela para". Falta só um canal entre aparelhos.

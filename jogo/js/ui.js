@@ -1,16 +1,17 @@
 /* Interface "uma tela" (computador/projetor, passa-e-joga). Só desenha o estado do motor e envia ações.
  * Tudo que for privado (objetivo secreto, mão de cartas, voto fechado) fica atrás de uma tela de privacidade. */
 (function () {
-  const D = DADOS, E = Engine, R = E.R, C = Cartas, esc = C.esc;
+  const D = DADOS, E = Engine, B = Bot, R = E.R, C = Cartas, esc = C.esc;
   const KEY = 'assembleia.economia.v1';
   const $app = document.getElementById('app');
-  const U = { tela: 'inicio', sel: [], nomes: ['', '', '', '', ''], relogio: 'aviso', S: null, gateOk: null, modal: null,
+  const U = { tela: 'inicio', sel: [], nomes: ['', '', '', '', ''], bots: [false, false, false, false, false], botTroca: null, relogio: 'aviso', S: null, gateOk: null, modal: null,
     carta: null, parceiro: null, alvo: null, votosTmp: [], votoIdx: 0, troca: null, timer: null, timerKey: null,
     pk: '', objIdx: 0, revelado: false, toast: null, painel: null, salvo: null };
 
   // ---------- atalhos ----------
   const P = i => E.paisDe(D, U.S, i);
-  const nome = i => esc(P(i).nome) + (U.S.assentos[i].jogador ? ` <span class="mudo">(${esc(U.S.assentos[i].jogador)})</span>` : '');
+  const ehBot = i => !!U.S.assentos[i].bot;
+  const nome = i => esc(P(i).nome) + (U.S.assentos[i].bot ? ' <span class="mudo">(bot)</span>' : U.S.assentos[i].jogador ? ` <span class="mudo">(${esc(U.S.assentos[i].jogador)})</span>` : '');
   const nomeTxt = i => P(i).nome;
   const flag = (i, c = '') => C.bandeira(P(i), c);
   const carta = id => E.porId(D.acoes, id);
@@ -124,6 +125,11 @@
       ${slot(`Ações: compra ${S.compra.length} · descarte ${S.descarte.length}`, C.verso(104, 'AÇÕES'))}</div>`;
   }
 
+  // frase curta explicando a decisão de um bot
+  const notaBot = (i, txt) => txt ? `<p class="nota-bot"><span class="chip ouro">bot</span> <b>${esc(nomeTxt(i))}:</b> ${esc(txt)}</p>` : '';
+  // primeiro lugar humano a partir de 'de' (5 = acabou); só humanos veem objetivo secreto
+  const proxObj = de => { let i = de; while (i < 5 && U.S.assentos[i].bot) i++; return i; };
+
   // ---------- privacidade ----------
   const liberado = key => U.gateOk === key;
   function gate(key, seat, msg) {
@@ -151,11 +157,15 @@
       <p class="sub">Clique em 5 países. A ordem do clique define os lugares na mesa (sentido horário). Países fortes jogam por último em cada rodada.</p>
       <div class="grade-paises">${D.paises.map(p => `<button class="pcard ${ordem(p.id) ? 'sel' : ''}" data-a="selPais" data-id="${p.id}">${ordem(p.id) ? `<span class="ordem">${ordem(p.id)}</span>` : ''}${C.bandeira(p, 'xg')}<b>${esc(p.nome)}</b><small>força ${p.forca}${p.provisorio ? ' (provisória)' : ''} · ${esc(p.figura)}</small></button>`).join('')}</div>
       <div style="display:flex;gap:.8em;margin:1em 0"><button class="btn sec" data-a="sortear">Sortear 5 países</button></div>
-      <p class="mudo peq" style="margin:.3em 0">Nome de quem joga cada país (opcional):</p>
-      <div class="nomes">${[0, 1, 2, 3, 4].map(i => `<div><div class="peq mudo">${U.sel[i] ? esc(E.porId(D.paises, U.sel[i]).nome) : 'Lugar ' + (i + 1)}</div><input data-i="${i}" maxlength="18" placeholder="nome" value="${esc(U.nomes[i])}"></div>`).join('')}</div>
+      <div style="display:flex;gap:.6em;align-items:center;flex-wrap:wrap;margin:.4em 0"><span class="mudo">Quantas pessoas jogam?</span>
+        ${[1, 2, 3, 4, 5].map(n => `<button class="opt ${U.bots.filter(b => !b).length === n ? 'sel' : ''}" data-a="humanos" data-v="${n}">${n}${n === 5 ? '' : ' + ' + (5 - n) + ' bot' + (5 - n > 1 ? 's' : '')}</button>`).join('')}</div>
+      <p class="mudo peq" style="margin:.3em 0">Nome de quem joga cada país (opcional). Clique em "Pessoa / Bot" para trocar um lugar:</p>
+      <div class="nomes">${[0, 1, 2, 3, 4].map(i => `<div><div class="peq mudo">${U.sel[i] ? esc(E.porId(D.paises, U.sel[i]).nome) : 'Lugar ' + (i + 1)}</div>
+        <input data-i="${i}" maxlength="18" placeholder="${U.bots[i] ? 'bot' : 'nome'}" value="${U.bots[i] ? '' : esc(U.nomes[i])}" ${U.bots[i] ? 'disabled' : ''}>
+        <button class="opt peq ${U.bots[i] ? 'sel' : ''}" style="width:100%;margin-top:.3em;text-align:center" data-a="toggleBot" data-i="${i}">${U.bots[i] ? 'Bot' : 'Pessoa'}</button></div>`).join('')}</div>
       <div style="display:flex;gap:1em;align-items:center;margin:.6em 0"><span class="mudo">Relógio das fases:</span>
         <button class="opt ${U.relogio === 'aviso' ? 'sel' : ''}" data-a="relogio" data-v="aviso">Ligado (só avisa)</button><button class="opt ${U.relogio === 'off' ? 'sel' : ''}" data-a="relogio" data-v="off">Desligado</button></div>
-      <div style="display:flex;gap:1em;margin-top:1em"><button class="btn sec" data-a="voltarInicio">Voltar</button><button class="btn grande" data-a="comecar" ${U.sel.length === 5 ? '' : 'disabled'}>Começar a partida</button></div></div>`;
+      <div style="display:flex;gap:1em;margin-top:1em"><button class="btn sec" data-a="voltarInicio">Voltar</button><button class="btn grande" data-a="comecar" ${U.sel.length === 5 && U.bots.some(b => !b) ? '' : 'disabled'}>Começar a partida</button></div></div>`;
   }
 
   function telaJogo() {
@@ -167,11 +177,11 @@
   function gateAtual() {
     const S = U.S;
     if (S.fase === 'objetivos' && U.objIdx < 5) return gate('obj:' + U.objIdx, U.objIdx, 'Você vai ver seu objetivo secreto. Não mostre para ninguém!');
-    if (S.fase === 'jogar' && !S.pend) { const seat = E.seatDaVez(S); if (seat != null) return gate(`mao:${S.rodada}:${S.turno.idx}`, seat, 'Você vai ver suas cartas de ação. Não mostre para ninguém!'); }
-    if (S.pend && S.pend.tipo === 'troca' && !S.pend.resultado) return gate(`resp:${pendKey()}`, S.pend.parceiro, `${nomeTxt(S.pend.quem)} quer trocar uma carta com você.`);
-    if (S.pend && S.pend.tipo === 'voto' && !S.pend.resultado && S.votoModo === 'fechado' && U.votoIdx < 5) return gate(`voto:${pendKey()}:${U.votoIdx}`, U.votoIdx, 'Voto fechado: só você vê a tela.');
+    if (S.fase === 'jogar' && !S.pend) { const seat = E.seatDaVez(S); if (seat != null && !ehBot(seat)) return gate(`mao:${S.rodada}:${S.turno.idx}`, seat, 'Você vai ver suas cartas de ação. Não mostre para ninguém!'); }
+    if (S.pend && S.pend.tipo === 'troca' && !S.pend.resultado && !ehBot(S.pend.parceiro)) return gate(`resp:${pendKey()}`, S.pend.parceiro, `${nomeTxt(S.pend.quem)} quer trocar uma carta com você.`);
+    if (S.pend && S.pend.tipo === 'voto' && !S.pend.resultado && S.votoModo === 'fechado' && U.votoIdx < 5 && !ehBot(U.votoIdx)) return gate(`voto:${pendKey()}:${U.votoIdx}`, U.votoIdx, 'Voto fechado: só você vê a tela.');
     if (U.troca && U.troca.passo === 2) return gate('t2:' + U.troca.a, U.troca.a, 'Escolha a carta que você oferece.');
-    if (U.troca && U.troca.passo === 3) return gate('t3:' + U.troca.b, U.troca.b, `${nomeTxt(U.troca.a)} fez uma oferta para você.`);
+    if (U.troca && U.troca.passo === 3 && !ehBot(U.troca.b)) return gate('t3:' + U.troca.b, U.troca.b, `${nomeTxt(U.troca.a)} fez uma oferta para você.`);
     return '';
   }
 
@@ -203,11 +213,18 @@
     return `<div style="display:flex;gap:2em;align-items:center;justify-content:center;height:100%">${C.objetivo(o, 300)}
       <div style="max-width:24em"><h2>${nome(i)}</h2><h3 style="font-size:1.5em;line-height:1.3">${esc(o.texto)}</h3><p class="lead">Vale <b>${o.pts} pontos</b> se você cumprir até o fim da rodada 5.</p>
       <p class="mudo">${o.verifica === 'manual' ? 'A mesa confirma no fim se você cumpriu.' : 'O jogo confere sozinho no fim.'}</p>
-      <button class="btn grande" data-a="objProx">${i < 4 ? 'Guardei. Esconder e passar' : 'Guardei. Começar o jogo'}</button></div></div>`;
+      <button class="btn grande" data-a="objProx">${proxObj(i + 1) < 5 ? 'Guardei. Esconder e passar' : 'Guardei. Começar o jogo'}</button></div></div>`;
   }
 
   function pPresidencia() {
     const S = U.S, pr = S.presidente;
+    if (ehBot(pr)) {
+      const m = B.modo(D, S, pr);
+      return `<h2>Rodada ${S.rodada} · Presidência</h2>
+        <div style="display:flex;gap:1.2em;align-items:center">${flag(pr, 'xg')}<div><div class="lead"><b>${nome(pr)}</b> é a presidente desta rodada.</div><div class="mudo">Ela escolhe como a mesa vai votar.</div></div></div>
+        <p class="lead">Escolha dela: <b>${m.modo === 'aberto' ? 'Voto aberto' : 'Voto fechado'}</b></p>${notaBot(pr, m.nota)}
+        <div class="acoes"><button class="btn grande" data-a="botModo">${E.ehRodadaCrise(S.rodada) ? 'Revelar a crise →' : 'Abrir o debate →'}</button></div>`;
+    }
     return `<h2>Rodada ${S.rodada} · Presidência</h2>
       <div style="display:flex;gap:1.2em;align-items:center">${flag(pr, 'xg')}<div><div class="lead"><b>${nome(pr)}</b> é a presidente desta rodada.</div><div class="mudo">Ela abre a sessão e escolhe como a mesa vai votar nesta rodada.</div></div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1em;max-width:46em">
@@ -241,14 +258,16 @@
     return `<h2>Rodada ${S.rodada} · Troca de cartas</h2>
       <p class="lead">Quem quiser pode trocar uma carta de ação com outro país. Negociem em voz alta, depois registrem aqui.</p>
       <div><button class="btn" data-a="trocaIni">Registrar uma troca</button></div>
-      <div class="painel"><b>Trocas desta rodada:</b> ${S.trocas.length ? S.trocas.map(t => `<span class="chip">${flag(t.a)} ⇄ ${flag(t.b)}</span>`).join(' ') : '<span class="mudo">nenhuma ainda</span>'}</div>
+      <div class="painel"><b>Trocas desta rodada:</b> ${S.trocas.length ? S.trocas.map(t => `<span class="chip">${flag(t.a)} ⇄ ${flag(t.b)}</span>`).join(' ') : '<span class="mudo">nenhuma ainda</span>'}
+        ${S.trocas.filter(t => t.nota).map(t => notaBot(t.a, `${nomeTxt(t.a)} ⇄ ${nomeTxt(t.b)}. ${t.nota}`)).join('')}
+        ${S.assentos.some(a => a.bot) ? '<p class="mudo peq" style="margin:.5em 0 0">Os bots trocam entre si sozinhos. Para trocar com um bot, use "Registrar uma troca".</p>' : ''}</div>
       <div class="acoes"><button class="btn grande" data-a="avancar">Encerrar trocas →</button></div>`;
   }
 
   function pTrocaFluxo() {
     const S = U.S, t = U.troca;
     if (t.passo === 1) {
-      return `<h2>Registrar troca</h2><p class="lead">Quem oferece uma carta?</p><div class="flags-sel">${S.assentos.map(a => `<button class="opt ${t.a === a.i ? 'sel' : ''}" data-a="trocaA" data-s="${a.i}">${flag(a.i)} ${nome(a.i)}</button>`).join('')}</div>
+      return `<h2>Registrar troca</h2><p class="lead">Quem oferece uma carta?</p><div class="flags-sel">${S.assentos.map(a => `<button class="opt ${t.a === a.i ? 'sel' : ''}" data-a="trocaA" data-s="${a.i}" ${a.bot ? 'disabled' : ''}>${flag(a.i)} ${nome(a.i)}</button>`).join('')}</div>
         <p class="lead">Com quem?</p><div class="flags-sel">${S.assentos.map(a => `<button class="opt ${t.b === a.i ? 'sel' : ''}" data-a="trocaB" data-s="${a.i}" ${t.a === a.i ? 'disabled' : ''}>${flag(a.i)} ${nome(a.i)}</button>`).join('')}</div>
         <div class="acoes"><button class="btn sec" data-a="trocaCancelar">Cancelar</button><button class="btn grande" data-a="trocaPasso2" ${t.a != null && t.b != null ? '' : 'disabled'}>Continuar →</button></div>`;
     }
@@ -256,6 +275,12 @@
       if (!liberado('t2:' + t.a)) return `<h2>Registrar troca</h2><p class="mudo">Aguardando ${nome(t.a)}…</p>`;
       return `<h2>${nome(t.a)}: que carta você oferece?</h2><div class="hand">${S.mao[t.a].map(id => `<div class="carta-w" data-a="trocaCartaA" data-id="${id}">${C.acao(carta(id), 170, t.cartaA === id ? 'sel' : '')}</div>`).join('')}</div>
         <div class="acoes"><button class="btn sec" data-a="trocaCancelar">Cancelar</button><button class="btn grande" data-a="trocaOferecer" ${t.cartaA ? '' : 'disabled'}>Oferecer para ${esc(nomeTxt(t.b))} →</button></div>`;
+    }
+    if (ehBot(t.b)) {
+      const r = B.resposta(D, S, t.b, t.cartaA, t.a);
+      return `<h2>${nome(t.b)} recebeu a oferta de ${nome(t.a)}</h2><p class="lead">A carta oferecida fica em segredo. O bot decide:</p>
+        <div class="resultado ${r.aceita ? 'ok' : 'no'}">${r.aceita ? 'Aceita a troca' : 'Recusa a troca'}</div>${notaBot(t.b, r.nota)}
+        <div class="acoes"><button class="btn sec" data-a="trocaCancelar">Cancelar</button><button class="btn grande" data-a="trocaBot">Continuar →</button></div>`;
     }
     if (!liberado('t3:' + t.b)) return `<h2>Registrar troca</h2><p class="mudo">Aguardando ${nome(t.b)}…</p>`;
     return `<h2>${nome(t.b)}: ${esc(nomeTxt(t.a))} oferece esta carta</h2><div style="display:flex;gap:2em;align-items:flex-start"><div>${C.acao(carta(t.cartaA), 190)}</div>
@@ -276,9 +301,15 @@
   function pJogar() {
     const S = U.S, seat = E.seatDaVez(S), p = S.pend;
     const cab = `<h2>Rodada ${S.rodada} · Jogar cartas</h2>${fila(S.turno.ordem, p ? p.quem ?? seat : seat)}`;
-    if (p && p.tipo === 'voto') return cab + pVoto(p);
+    if (p && p.tipo === 'voto') return `<h2>Rodada ${S.rodada} · Votação</h2>` + pVoto(p);
     if (p && p.tipo === 'troca') return cab + pTrocaLeve(p);
     if (seat == null) return cab;
+    if (ehBot(seat)) {
+      const j = B.jogada(D, S, seat), c = j.tipo === 'jogar' ? carta(j.carta) : null;
+      return cab + `<div style="display:flex;gap:1.6em;align-items:flex-start">${flag(seat, 'xg')}<div style="flex:1"><p class="lead"><b>${nome(seat)}</b> ${c ? (c.tipo === 'troca' ? `oferece uma troca a <b>${esc(nomeTxt(j.parceiro))}</b>.` : `joga <b>${esc(c.nome)}</b>${c.tipo === 'media' ? ` (acordo com <b>${esc(nomeTxt(j.parceiro))}</b>)` : ' (plano caro)'}.`) : 'passa a vez.'}</p>${notaBot(seat, j.nota)}
+        ${c && c.tipo !== 'troca' ? `<div class="peq" style="margin:.4em 0">${efeitoJogo(c)}</div>` : ''}
+        <div class="acoes"><button class="btn grande" data-a="botJoga">${c ? (c.tipo === 'troca' ? 'Continuar →' : 'Votar a proposta →') : 'Continuar →'}</button></div></div>${c && c.tipo !== 'troca' ? `<div>${C.acao(c, 170)}</div>` : ''}</div>`;
+    }
     const key = `mao:${S.rodada}:${S.turno.idx}`;
     if (!liberado(key)) return cab + `<p class="lead">Vez de <b>${nome(seat)}</b>…</p>`;
     const mao = S.mao[seat], sel = U.carta ? carta(U.carta) : null;
@@ -295,9 +326,11 @@
 
   function pTrocaLeve(p) {
     const S = U.S, c = carta(p.carta);
-    if (p.resultado) return `<div class="resultado ${p.resultado.aceita ? 'ok' : 'no'}">${p.resultado.aceita ? 'Troca aceita!' : 'Troca recusada'}</div>
+    if (p.resultado) return `<div class="resultado ${p.resultado.aceita ? 'ok' : 'no'}">${p.resultado.aceita ? 'Troca aceita!' : 'Troca recusada'}</div>${ehBot(p.parceiro) ? notaBot(p.parceiro, p.resultado.nota) : ''}
       <p class="centro lead">${p.resultado.aceita ? `${nome(p.quem)} ganha <b>+${p.resultado.ponto} ponto${p.resultado.ponto > 1 ? 's' : ''}</b>. As cartas mudaram de mão.` : `${nome(p.parceiro)} recusou. A carta continua com ${nome(p.quem)}.${p.resultado.ponto ? ` Mesmo assim ${nome(p.quem)} ganha <b>+${p.resultado.ponto}</b> (habilidade do país).` : ''}`}</p>
       <div class="acoes" style="justify-content:center"><button class="btn grande" data-a="trocaOk">Continuar →</button></div>`;
+    if (ehBot(p.parceiro)) return `<p class="lead"><b>${nome(p.quem)}</b> oferece uma troca para <b>${nome(p.parceiro)}</b>. A carta oferecida fica em segredo.</p>${notaBot(p.quem, ehBot(p.quem) ? p.nota : '')}
+      <div class="acoes"><button class="btn grande" data-a="botResp">Ver a resposta de ${esc(nomeTxt(p.parceiro))} →</button></div>`;
     const key = `resp:${pendKey()}`;
     if (!liberado(key)) return `<p class="lead">${nome(p.quem)} oferece "${esc(c.nome)}" para ${nome(p.parceiro)}…</p>`;
     return `<p class="lead"><b>${nome(p.quem)}</b> oferece esta carta para <b>${nome(p.parceiro)}</b>. Se aceitar, escolha uma das suas para dar em troca.</p>
@@ -309,11 +342,11 @@
   function pVoto(p) {
     const S = U.S; if (!p) return '';
     const c = carta(p.carta), tit = `${nomeTxt(p.quem)} propõe: ${c.nome}`;
-    const cab = `<h3 style="font-size:1.4em">${esc(tit)}</h3><p class="lead">${esc(c.efeito)}</p><p class="peq mudo">${efeitoJogo(c)}${p.parceiro != null ? ` Parceiro: ${esc(nomeTxt(p.parceiro))}.` : ''}</p>`;
+    const cab = `<h3 style="font-size:1.4em;margin:0">${esc(tit)}</h3><p class="peq" style="margin:0">${esc(c.efeito)}</p><p class="peq mudo" style="margin:0">${efeitoJogo(c)}${p.parceiro != null ? ` Parceiro: ${esc(nomeTxt(p.parceiro))}.` : ''}</p>${ehBot(p.quem) ? notaBot(p.quem, p.nota) : ''}`;
     if (p.resultado) {
       const r = p.resultado, aberto = S.votoModo !== 'fechado';
       return `${cab}<div class="resultado ${r.aprovado ? 'ok' : 'no'}">${r.aprovado ? 'APROVADO' : 'REPROVADO'} · ${r.sim} × ${r.nao}</div>${r.votoExtra ? '<p class="centro lead">Grécia usou o <b>voto extra</b> (1 vez por partida) e virou o resultado.</p>' : ''}
-        ${aberto ? `<div class="flags-sel" style="justify-content:center">${S.assentos.map(a => `<span class="chip ${p.votos[a.i] ? 'verde' : 'verm'}">${flag(a.i)} ${esc(nomeTxt(a.i))}: ${p.votos[a.i] ? 'sim' : 'não'}</span>`).join('')}</div>` : '<p class="centro mudo">Voto fechado: só o total aparece.</p>'}
+        ${aberto ? `<div class="flags-sel" style="justify-content:center">${S.assentos.map(a => `<span class="chip ${p.votos[a.i] ? 'verde' : 'verm'}">${flag(a.i)} ${esc(nomeTxt(a.i))}: ${p.votos[a.i] ? 'sim' : 'não'}</span>`).join('')}</div>${S.assentos.filter(a => a.bot && p.notas && p.notas[a.i]).map(a => notaBot(a.i, (p.votos[a.i] ? 'Votou sim. ' : 'Votou não. ') + p.notas[a.i])).join('')}` : '<p class="centro mudo">Voto fechado: só o total aparece (os bots também votaram em segredo).</p>'}
         <div class="acoes" style="justify-content:center"><button class="btn grande" data-a="votoOk">Continuar →</button></div>`;
     }
     if (S.votoModo === 'fechado') {
@@ -322,10 +355,10 @@
       return `${cab}<div style="display:flex;gap:1.2em;align-items:center">${flag(i, 'xg')}<div class="lead"><b>${nome(i)}</b>, como você vota?</div></div>
         <div class="acoes"><button class="btn sim grande" data-a="votoSeat" data-v="1">Sim</button><button class="btn nao grande" data-a="votoSeat" data-v="0">Não</button></div>`;
     }
-    const todos = S.assentos.every(a => U.votosTmp[a.i] != null);
-    return `${cab}<div class="painel">${S.assentos.map(a => `<div class="voto-linha"><div class="nm">${flag(a.i)} ${nome(a.i)}</div>
-        <button class="btn sim ${U.votosTmp[a.i] === true ? 'sel' : ''}" data-a="votoTmp" data-s="${a.i}" data-v="1">Sim</button><button class="btn nao ${U.votosTmp[a.i] === false ? 'sel' : ''}" data-a="votoTmp" data-s="${a.i}" data-v="0">Não</button></div>`).join('')}</div>
-      <div class="acoes"><span class="mudo">Voto aberto: cada país diz em voz alta e alguém marca aqui.</span><button class="btn grande" data-a="votoEnviar" ${todos ? '' : 'disabled'}>Contar votos</button></div>`;
+    const todos = S.assentos.every(a => a.bot || U.votosTmp[a.i] != null);
+    return `${cab}<div class="painel" style="padding:.4em .9em">${S.assentos.map(a => { if (a.bot) { const v = B.voto(D, S, a.i); return `<div class="voto-linha"><div class="nm">${flag(a.i)} ${nome(a.i)}</div><span class="chip ${v.voto ? 'verde' : 'verm'}">${v.voto ? 'Sim' : 'Não'}</span><span class="peq mudo" style="grid-column:span 1">${esc(v.nota)}</span></div>`; } return `<div class="voto-linha"><div class="nm">${flag(a.i)} ${nome(a.i)}</div>
+        <button class="btn sim ${U.votosTmp[a.i] === true ? 'sel' : ''}" data-a="votoTmp" data-s="${a.i}" data-v="1">Sim</button><button class="btn nao ${U.votosTmp[a.i] === false ? 'sel' : ''}" data-a="votoTmp" data-s="${a.i}" data-v="0">Não</button></div>`; }).join('')}</div>
+      <div class="acoes"><span class="mudo">Voto aberto: cada pessoa diz em voz alta e alguém marca aqui. Os bots já votaram.</span><button class="btn grande" data-a="votoEnviar" ${todos ? '' : 'disabled'}>Contar votos</button></div>`;
   }
 
   function pFecho() {
@@ -380,15 +413,27 @@
     selPais(d) { const i = U.sel.indexOf(d.id); if (i >= 0) U.sel.splice(i, 1); else if (U.sel.length < 5) U.sel.push(d.id); },
     sortear() { const ids = D.paises.map(p => p.id); const s = { rng: (Math.random() * 4294967296) >>> 0 }; U.sel = E.embaralha(s, ids).slice(0, 5); },
     relogio(d) { U.relogio = d.v; },
+    humanos(d) { U.bots = [0, 1, 2, 3, 4].map(i => i >= +d.v); },
+    toggleBot(d) { U.bots[+d.i] = !U.bots[+d.i]; },
     comecar() {
-      if (U.sel.length !== 5) return;
-      U.S = E.novoJogo(D, { paises: U.sel, nomes: U.nomes, relogio: U.relogio });
-      U.tela = 'jogo'; U.objIdx = 0; U.gateOk = null; U.revelado = false; U.timerKey = null; U.pk = ''; U.troca = null; salva();
+      if (U.sel.length !== 5 || U.bots.every(b => b)) return;
+      U.S = E.novoJogo(D, { paises: U.sel, nomes: U.nomes, bots: U.bots, relogio: U.relogio });
+      U.botTroca = null; U.tela = 'jogo'; U.objIdx = proxObj(0); U.gateOk = null; U.revelado = false; U.timerKey = null; U.pk = ''; U.troca = null; salva();
     },
-    continuar() { const s = carrega(); if (s && s.S) { U.S = s.S; U.tela = 'jogo'; U.objIdx = U.S.fase === 'objetivos' ? 0 : 5; U.gateOk = null; U.revelado = false; U.timerKey = null; U.pk = ''; U.troca = null; } },
+    continuar() { const s = carrega(); if (s && s.S) { U.S = s.S; U.botTroca = null; U.tela = 'jogo'; U.objIdx = U.S.fase === 'objetivos' ? proxObj(0) : 5; U.gateOk = null; U.revelado = false; U.timerKey = null; U.pk = ''; U.troca = null; } },
     abrirGate(d) { U.gateOk = d.key; },
-    objProx() { U.objIdx++; U.gateOk = null; if (U.objIdx >= 5) A({ tipo: 'objetivos_ok' }); },
+    objProx() { U.objIdx = proxObj(U.objIdx + 1); U.gateOk = null; if (U.objIdx >= 5) A({ tipo: 'objetivos_ok' }); },
     modo(d) { A({ tipo: 'voto_modo', modo: d.v }); },
+    botModo() { const m = B.modo(D, U.S, U.S.presidente); A({ tipo: 'voto_modo', modo: m.modo, nota: m.nota }); A({ tipo: 'avancar' }); },
+    botJoga() {
+      const seat = E.seatDaVez(U.S), j = B.jogada(D, U.S, seat);
+      if (j.tipo === 'passar') A({ tipo: 'passar', nota: j.nota }); else A({ tipo: 'jogar', seat, carta: j.carta, parceiro: j.parceiro, alvo: j.alvo, nota: j.nota });
+    },
+    botResp() { const p = U.S.pend, r = B.resposta(D, U.S, p.parceiro, p.carta, p.quem); A({ tipo: 'resposta_troca', aceita: r.aceita, cartaDevolve: r.cartaDevolve, nota: r.nota }); },
+    trocaBot() {
+      const t = U.troca, r = B.resposta(D, U.S, t.b, t.cartaA, t.a); U.troca = null; U.gateOk = null;
+      if (r.aceita) { A({ tipo: 'trocar', a: t.a, b: t.b, cartaA: t.cartaA, cartaB: r.cartaDevolve, nota: r.nota }); toast('Troca aceita pelo bot.'); } else toast(nomeTxt(t.b) + ' recusou a troca. ' + r.nota);
+    },
     avancar() { A({ tipo: 'avancar' }); },
     pausa() { const t = U.timer; if (!t) return; if (t.pausadoEm) { t.fim += Date.now() - t.pausadoEm; t.pausadoEm = null; } else t.pausadoEm = Date.now(); },
     cartaModal(d) { U.modal = { t: d.t, id: d.id }; },
@@ -416,7 +461,11 @@
     trocaOk() { A({ tipo: 'troca_ok' }); },
     // votos
     votoTmp(d) { U.votosTmp[+d.s] = d.v === '1'; },
-    votoEnviar() { A({ tipo: 'votar', votos: U.S.assentos.map(a => U.votosTmp[a.i]) }); },
+    votoEnviar() {
+      const S = U.S, notas = {};
+      const votos = S.assentos.map(a => { if (!a.bot) return U.votosTmp[a.i]; const v = B.voto(D, S, a.i); notas[a.i] = v.nota; return v.voto; });
+      A({ tipo: 'votar', votos, notas });
+    },
     votoSeat(d) { const i = U.votoIdx; U.votoIdx++; U.gateOk = null; A({ tipo: 'votar', seat: i, voto: d.v === '1' }); },
     votoOk() { A({ tipo: 'voto_ok' }); },
     revelar() { U.revelado = true; },
@@ -432,8 +481,26 @@
   document.addEventListener('input', ev => { const i = ev.target.dataset && ev.target.dataset.i; if (i != null && ev.target.tagName === 'INPUT') U.nomes[+i] = ev.target.value; });
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && U.modal) { U.modal = null; render(); } });
 
+  // o que os bots fazem sem precisar de ninguém olhando: trocas entre bots e votos em segredo
+  function autoBots() {
+    const S = U.S; if (U.tela !== 'jogo' || !S) return;
+    if (S.fase === 'troca' && U.botTroca !== S.rodada) {
+      U.botTroca = S.rodada;
+      let t, g = 0;
+      while (g++ < 5 && (t = B.proximaTroca(D, S))) E.acao(D, S, Object.assign({ tipo: 'trocar' }, t));
+      salva();
+    }
+    const p = S.pend;
+    if (p && p.tipo === 'voto' && !p.resultado && S.votoModo === 'fechado') {
+      let n = 0;
+      while (U.votoIdx < 5 && S.assentos[U.votoIdx].bot && n++ < 5) { const i = U.votoIdx, v = B.voto(D, S, i); U.votoIdx++; E.acao(D, S, { tipo: 'votar', seat: i, voto: v.voto, notas: { [i]: v.nota } }); }
+      salva();
+    }
+  }
+
   function render() {
     sync();
+    autoBots();
     const foco = document.activeElement && document.activeElement.tagName === 'INPUT' ? [document.activeElement.dataset.i, document.activeElement.selectionStart] : null;
     $app.innerHTML = U.tela === 'inicio' ? telaInicio() + modalHTML() : U.tela === 'setup' ? telaSetup() : telaJogo();
     if (foco) { const el = $app.querySelector(`input[data-i="${foco[0]}"]`); if (el) { el.focus(); try { el.setSelectionRange(foco[1], foco[1]); } catch (e) { /* ok */ } } }
