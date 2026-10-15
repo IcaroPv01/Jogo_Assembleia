@@ -15,7 +15,7 @@
   const R = {
     JOGADORES: 5, RODADAS: 5, MAO: 3, MAO_GRANDE: 4,
     RODADAS_COM_CRISE: [1, 3, 5],       // 1 = fixa, 3 e 5 = aleatórias
-    META: 13, TRILHA_MAX: 15,
+    META: 13, TRILHA_MAX: 13,           // trilha de 14 casas (0 a 13), igual ao tabuleiro impresso
     PTS_NAO_RESOLVIDA: -2,              // na trilha
     BONUS_META: 2,                      // pontos para todos
     MAIORIA: 3,                         // votos "sim" para aprovar (5 jogadores)

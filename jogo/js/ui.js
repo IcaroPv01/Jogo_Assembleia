@@ -66,21 +66,17 @@
       <div class="menu"><button class="btn sec" data-a="regras">Regras</button><button class="btn sec" data-a="diario">Diário</button><button class="btn sec" data-a="menuSair">Sair</button></div></div>`;
   };
 
-  function trilhaSVG() {
-    const S = U.S, n = R.TRILHA_MAX + 1, cx = 170, cy = 170, r = 135;
-    const pos = i => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
-    let s = `<svg class="trilha-svg" viewBox="0 0 340 340" role="img" aria-label="Trilha mundial">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(232,194,122,.2)" stroke-width="22"/>`;
-    for (let i = 0; i < n; i++) {
-      const [x, y] = pos(i); const k = i === R.META ? 'meta' : i === 0 ? 'ini' : i <= S.trilha ? 'ate' : '';
-      s += `<g><circle class="nodo ${k}" cx="${x}" cy="${y}" r="${i === R.META ? 17 : 14}"/><text x="${x}" y="${y + 5}" text-anchor="middle" font-size="${i === R.META ? 15 : 13}" font-weight="700" fill="${i === R.META ? '#3d1f08' : '#f3e9d2'}">${i === R.META ? '★' : i}</text></g>`;
+  // Trilha em volta, como no tabuleiro impresso: 0 a 4 em cima, 5 e 6 à direita, 7 a 11 embaixo, 12 e 13 à esquerda (13 = META).
+  function trilhaHTML() {
+    const S = U.S;
+    const lugar = i => i <= 4 ? [1, i + 1] : i <= 6 ? [i - 3, 5] : i <= 11 ? [4, 5 - (i - 7)] : [4 - (i - 11), 1]; // [linha, coluna]
+    let cel = '';
+    for (let i = 0; i <= R.TRILHA_MAX; i++) {
+      const [l, c] = lugar(i);
+      const k = i === 0 ? 'ini' : i === R.META ? 'meta' : i <= S.trilha ? 'ate' : '';
+      cel += `<div class="casa ${k} ${i === S.trilha ? 'aqui' : ''}" style="grid-row:${l};grid-column:${c}"><span>${i === 0 ? 'INÍCIO' : i === R.META ? '★' : i}</span>${i === 0 || i === R.META ? '' : ''}${i === S.trilha ? `<b class="peao" title="Trilha mundial">${C.icone('world')}</b>` : ''}</div>`;
     }
-    const [mx, my] = pos(S.trilha);
-    s += `<g class="marcador" style="transform:translate(${mx.toFixed(1)}px,${my.toFixed(1)}px)"><circle r="21" fill="#e8c27a" stroke="#3d1f08" stroke-width="3"/><g transform="translate(-12,-12)" fill="none" stroke="#3d1f08" stroke-width="2" stroke-linecap="round">${D.icones.world}</g></g>
-      <text x="${cx}" y="${cy - 34}" text-anchor="middle" font-size="13" letter-spacing="3" fill="#b9a98c">TRILHA MUNDIAL</text>
-      <text x="${cx}" y="${cy + 24}" text-anchor="middle" font-size="76" font-weight="700" fill="#e8c27a">${S.trilha}</text>
-      <text x="${cx}" y="${cy + 52}" text-anchor="middle" font-size="15" fill="#b9a98c">meta: casa ${R.META} ★</text></svg>`;
-    return s;
+    return `<div class="trilha">${cel}<div class="trilha-miolo"><small>TRILHA MUNDIAL</small><strong>${S.trilha}</strong><small>meta: casa ${R.META} ★</small></div></div>`;
   }
 
   function statusCrise(id) {
@@ -164,7 +160,7 @@
 
   function telaJogo() {
     const S = U.S;
-    const esq = `<div class="painel centro">${trilhaSVG()}</div>${painelCrise()}<div class="painel"><h3>Últimos lances</h3><div class="diario">${S.log.slice(-8).reverse().map(l => `<div><span class="mudo">R${l.r}</span> ${esc(l.txt)}</div>`).join('') || '<span class="mudo">Nada ainda.</span>'}</div></div>`;
+    const esq = `<div class="painel">${trilhaHTML()}</div>${painelCrise()}<div class="painel"><h3>Últimos lances</h3><div class="diario">${S.log.slice(-8).reverse().map(l => `<div><span class="mudo">R${l.r}</span> ${esc(l.txt)}</div>`).join('') || '<span class="mudo">Nada ainda.</span>'}</div></div>`;
     return `${topoJogo()}<div class="mesa"><div class="col">${esq}</div><div class="centro-mesa">${S.fase === 'objetivos' ? '' : mesaCartas()}<div class="painel fase" id="painel">${painelFase()}</div></div><div class="col">${colDelegados()}</div></div>${gateAtual()}${modalHTML()}${U.toast ? `<div class="toast">${esc(U.toast)}</div>` : ''}`;
   }
 
@@ -372,7 +368,7 @@
     else if (m.t === 'diario') corpo = `<div class="ficha" style="max-width:44em"><h2>Diário da mesa</h2>${U.S.log.slice().reverse().map(l => `<div class="peq"><span class="mudo">R${l.r}</span> ${esc(l.txt)}</div>`).join('') || '<p class="mudo">Nada ainda.</p>'}</div>`;
     else if (m.t === 'sair') corpo = `<div class="ficha"><h2>Sair da partida?</h2><p>A partida fica salva neste navegador e dá para continuar depois.</p><div class="acoes"><button class="btn grande" data-a="voltarInicio">Menu inicial</button><button class="btn nao" data-a="descartar">Apagar partida</button></div></div>`;
     else if (m.t === 'pais') { const p = E.porId(D.paises, m.id); corpo = `${C.pais(p, 380)}<div class="ficha"><h2>${esc(p.nome)}</h2><dl><dt>Força</dt><dd>${p.forca} de 6 ${p.provisorio ? '(provisória)' : ''}</dd><dt>Capital</dt><dd>${esc(p.capital)}</dd><dt>Moeda</dt><dd>${esc(p.moeda)}</dd><dt>Sistema</dt><dd>${esc(p.sistema)}</dd><dt>Figura</dt><dd>${esc(p.figura)}</dd></dl><p>${esc(p.resumo)}</p><b>Habilidades</b><ul>${p.habilidades.map(h => `<li>${esc(h)}</li>`).join('')}</ul></div>`; }
-    else if (m.t === 'evento') { const e = evt(m.id); corpo = `${C.evento(e, 380)}<div class="ficha"><h2>${esc(e.titulo)} ${e.titulo.includes(e.ano) ? '' : `<span class="mudo">${esc(e.ano)}</span>`}</h2><p>${esc(e.descricao)}</p><b>Tópicos de debate</b><ul>${e.topicos.map(t => `<li>${esc(t)}</li>`).join('')}</ul><p><b>Para resolver (+${e.pts_resolver}):</b> ${esc(e.requisito)}</p><p><b>Para atenuar (+${e.pts_atenuar}):</b> ${esc(e.requisito_atenuar)}</p><p class="mudo peq">${e.mecanica.tipo === 'votos' ? `Precisa de ${e.mecanica.n} votos a favor.` : `Precisa de ${e.mecanica.n} países assinando.`}</p></div>`; }
+    else if (m.t === 'evento') { const e = evt(m.id); corpo = `${C.evento(e, 380)}<div class="ficha"><h2>${esc(e.titulo)} ${e.titulo.includes(e.ano) ? '' : `<span class="mudo">${esc(e.ano)}</span>`}</h2><p>${esc(e.descricao)}</p><b>Tópicos de debate</b><ul>${e.topicos.map(t => `<li>${esc(t)}</li>`).join('')}</ul><p><b>Para resolver (+${e.pts_resolver}):</b> ${esc(e.requisito)}</p><p><b>Para atenuar (+${e.pts_atenuar}):</b> ${esc(e.requisito_atenuar)}</p><p class="mudo peq">Resolve com ${e.n} ajudas (cartas média ou pesada aprovadas em voto). Com 1 ou mais fica atenuada.</p></div>`; }
     return `<div class="modal" data-a="fecharModal"><div class="conteudo" data-a="nada">${corpo}<button class="fechar" data-a="fecharModal" aria-label="Fechar">×</button></div></div>`;
   }
 

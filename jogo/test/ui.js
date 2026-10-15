@@ -32,6 +32,7 @@ const URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
         const vis = e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !e.disabled; };
         const gate = document.querySelector('.gate [data-a]'); if (gate) { gate.click(); return 'gate'; }
         const modal = document.querySelector('.modal .fechar'); if (modal) { modal.click(); return 'modal'; }
+        if (Math.random() < 0.08) { const m = [...document.querySelectorAll('[data-a=cartaModal],[data-a=regras],[data-a=diario]')].filter(vis); if (m.length) { m[Math.floor(Math.random() * m.length)].click(); return 'abriu-modal'; } }
         const els = [...document.querySelectorAll('#painel [data-a]')].filter(vis).filter(e => !['cartaModal', 'pausa', 'nada'].includes(e.dataset.a));
         if (!els.length) return null;
         const pri = els.filter(e => ['avancar', 'objProx', 'votoOk', 'assOk', 'trocaOk', 'revelar'].includes(e.dataset.a));
