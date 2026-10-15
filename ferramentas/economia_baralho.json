@@ -1,0 +1,625 @@
+{
+ "baralho": {
+  "id": "economia",
+  "nome": "Economia",
+  "sigla": "ECO",
+  "cor": "#7a3f14",
+  "cor2": "#e8c27a",
+  "icone": "coin",
+  "jogo": "Assembleia · SimulaRI+"
+ },
+ "cartas": [
+  {
+   "carta": "pais",
+   "tipo": "pais",
+   "id": "ITA",
+   "nome": "Itália",
+   "bandeira": "it",
+   "forca": 6,
+   "resumo": "Berço do Império Romano e do Renascimento. Unificada em 1861, fundadora da UE.",
+   "habilidades": [
+    "(a definir)"
+   ],
+   "figura": "Giuseppe Garibaldi",
+   "capital": "Roma",
+   "moeda": "Euro",
+   "sistema": "República parlamentar",
+   "provisorio": true
+  },
+  {
+   "carta": "pais",
+   "tipo": "pais",
+   "id": "POR",
+   "nome": "Portugal",
+   "bandeira": "pt",
+   "forca": 6,
+   "resumo": "Pioneiro das Grandes Navegações e potência colonial até o século XX.",
+   "habilidades": [
+    "(a definir)"
+   ],
+   "figura": "Vasco da Gama",
+   "capital": "Lisboa",
+   "moeda": "Euro",
+   "sistema": "República semipresidencialista",
+   "provisorio": true
+  },
+  {
+   "carta": "pais",
+   "tipo": "pais",
+   "id": "URU",
+   "nome": "Uruguai",
+   "bandeira": "uy",
+   "forca": 6,
+   "resumo": "Pequeno país platino, independente em 1828, conhecido pela estabilidade institucional.",
+   "habilidades": [
+    "(a definir)"
+   ],
+   "figura": "José Artigas",
+   "capital": "Montevidéu",
+   "moeda": "Peso uruguaio",
+   "sistema": "República presidencialista",
+   "provisorio": true
+  },
+  {
+   "carta": "pais",
+   "tipo": "pais",
+   "id": "EGI",
+   "nome": "Egito",
+   "bandeira": "eg",
+   "forca": 6,
+   "resumo": "Controla o Canal de Suez, rota-chave do comércio mundial.",
+   "habilidades": [
+    "(a definir)"
+   ],
+   "figura": "Gamal Abdel Nasser",
+   "capital": "Cairo",
+   "moeda": "Libra egípcia",
+   "sistema": "República semipresidencialista",
+   "provisorio": true
+  },
+  {
+   "carta": "pais",
+   "tipo": "pais",
+   "id": "CHN",
+   "nome": "China",
+   "bandeira": "cn",
+   "forca": 6,
+   "resumo": "Segunda maior economia do mundo e 'fábrica do mundo'.",
+   "habilidades": [
+    "(a definir)"
+   ],
+   "figura": "Deng Xiaoping",
+   "capital": "Pequim",
+   "moeda": "Yuan (renminbi)",
+   "sistema": "República socialista de partido único",
+   "provisorio": true
+  },
+  {
+   "carta": "pais",
+   "tipo": "pais",
+   "id": "EUA",
+   "nome": "Estados Unidos",
+   "bandeira": "us",
+   "forca": 6,
+   "resumo": "Maior economia do mundo; emissor da moeda de reserva global.",
+   "habilidades": [
+    "(a definir)"
+   ],
+   "figura": "Franklin D. Roosevelt",
+   "capital": "Washington, D.C.",
+   "moeda": "Dólar",
+   "sistema": "República presidencialista federal",
+   "provisorio": true
+  },
+  {
+   "carta": "pais",
+   "tipo": "pais",
+   "id": "ARG",
+   "nome": "Argentina",
+   "bandeira": "ar",
+   "forca": 6,
+   "resumo": "Grande exportadora de grãos, com histórico de crises de dívida.",
+   "habilidades": [
+    "(a definir)"
+   ],
+   "figura": "Eva Perón",
+   "capital": "Buenos Aires",
+   "moeda": "Peso argentino",
+   "sistema": "República presidencialista federal",
+   "provisorio": true
+  },
+  {
+   "carta": "pais",
+   "tipo": "pais",
+   "id": "GRE",
+   "nome": "Grécia",
+   "bandeira": "gr",
+   "forca": 6,
+   "resumo": "Independente do Império Otomano em 1830 (guerra iniciada em 1821).",
+   "habilidades": [
+    "Forte tradição cultural",
+    "Potência turística",
+    "Influência histórica mundial (filosofia, política, ciência)"
+   ],
+   "figura": "Alexandre, o Grande",
+   "capital": "Atenas",
+   "moeda": "Euro",
+   "sistema": "República parlamentarista",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "fixa",
+   "id": "E01",
+   "titulo": "Crise Financeira de 2008",
+   "ano": "2008",
+   "descricao": "Colapso do mercado imobiliário dos EUA arrasta bancos e bolsas do mundo todo: recessão e desemprego global.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "trending-down",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E02",
+   "titulo": "Crise de 1929",
+   "ano": "1929",
+   "descricao": "Quebra da Bolsa de Nova York inicia a Grande Depressão.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "chart-line",
+   "natureza": "crise",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E03",
+   "titulo": "Pandemia de COVID-19",
+   "ano": "2020",
+   "descricao": "Fechamento de fronteiras e fábricas rompe cadeias de produção globais.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "shield-check",
+   "natureza": "crise",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E04",
+   "titulo": "Choque do Petróleo",
+   "ano": "1979",
+   "descricao": "Alta brusca do petróleo gera inflação e recessão nos países importadores.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "flame",
+   "natureza": "crise",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E05",
+   "titulo": "Crise de Suez",
+   "ano": "1956",
+   "descricao": "Disputa pelo controle do Canal de Suez ameaça o comércio mundial.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "ship",
+   "natureza": "crise",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E06",
+   "titulo": "Crise do Euro",
+   "ano": "2010",
+   "descricao": "Dívidas soberanas ameaçam a zona do euro.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "coin",
+   "natureza": "crise",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E07",
+   "titulo": "Sustentabilidade das Dívidas Nacionais",
+   "ano": "",
+   "descricao": "Países endividados enfrentam risco de calote e juros altos.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "scale",
+   "natureza": "crise",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E08",
+   "titulo": "Crise Demográfica",
+   "ano": "",
+   "descricao": "Envelhecimento da população pressiona a previdência e as contas públicas.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "users",
+   "natureza": "crise",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E09",
+   "titulo": "Automação e IA",
+   "ano": "",
+   "descricao": "A inteligência artificial dispara a produtividade, mas ameaça empregos. Renda básica universal?",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "robot",
+   "natureza": "oportunidade",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E10",
+   "titulo": "Fintechs",
+   "ano": "",
+   "descricao": "Novas tecnologias financeiras ampliam o crédito e desafiam os bancos tradicionais.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "currency-bitcoin",
+   "natureza": "oportunidade",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E11",
+   "titulo": "Transição Energética",
+   "ano": "",
+   "descricao": "Economia verde cria novos mercados e nova dependência econômica entre países.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "leaf",
+   "natureza": "oportunidade",
+   "provisorio": true
+  },
+  {
+   "carta": "evento",
+   "tipo": "aleatoria",
+   "id": "E12",
+   "titulo": "Taxação dos Super-ricos",
+   "ano": "",
+   "descricao": "Proposta de imposto global sobre grandes fortunas (Tobin tax e similares).",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "cash",
+   "natureza": "oportunidade",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A01",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Itália",
+   "bandeira": "it",
+   "tier": "leve",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A02",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Itália",
+   "bandeira": "it",
+   "tier": "medio",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A03",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Itália",
+   "bandeira": "it",
+   "tier": "pesado",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A04",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Portugal",
+   "bandeira": "pt",
+   "tier": "leve",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A05",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Portugal",
+   "bandeira": "pt",
+   "tier": "medio",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A06",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Portugal",
+   "bandeira": "pt",
+   "tier": "pesado",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A07",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Uruguai",
+   "bandeira": "uy",
+   "tier": "leve",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A08",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Uruguai",
+   "bandeira": "uy",
+   "tier": "medio",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A09",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Uruguai",
+   "bandeira": "uy",
+   "tier": "pesado",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A10",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Egito",
+   "bandeira": "eg",
+   "tier": "leve",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A11",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Egito",
+   "bandeira": "eg",
+   "tier": "medio",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A12",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Egito",
+   "bandeira": "eg",
+   "tier": "pesado",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A13",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "China",
+   "bandeira": "cn",
+   "tier": "leve",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A14",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "China",
+   "bandeira": "cn",
+   "tier": "medio",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A15",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "China",
+   "bandeira": "cn",
+   "tier": "pesado",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A16",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Estados Unidos",
+   "bandeira": "us",
+   "tier": "leve",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A17",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Estados Unidos",
+   "bandeira": "us",
+   "tier": "medio",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A18",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Estados Unidos",
+   "bandeira": "us",
+   "tier": "pesado",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A19",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Argentina",
+   "bandeira": "ar",
+   "tier": "leve",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A20",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Argentina",
+   "bandeira": "ar",
+   "tier": "medio",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A21",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Argentina",
+   "bandeira": "ar",
+   "tier": "pesado",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A22",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Grécia",
+   "bandeira": "gr",
+   "tier": "leve",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A23",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Grécia",
+   "bandeira": "gr",
+   "tier": "medio",
+   "provisorio": true
+  },
+  {
+   "carta": "acao",
+   "tipo": "acao",
+   "id": "A24",
+   "nome": "(a definir)",
+   "efeito": "(a definir)",
+   "pais": "Grécia",
+   "bandeira": "gr",
+   "tier": "pesado",
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "O01",
+   "texto": "(a definir) Ex.: terminar a partida com no máximo 1 crise ativa.",
+   "pts": 3,
+   "provisorio": true
+  }
+ ]
+}
