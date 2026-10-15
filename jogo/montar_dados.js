@@ -63,7 +63,9 @@ const acoes = cartas.acoes.map(a => ({ id: a.id, pais: idPorNome[norm(a.pais)], 
 
 // Objetivos: verificação automática pelo jogo ('auto') ou confirmada pela mesa no fim ('manual').
 const MANUAL = new Set(['ECO-O06', 'ECO-O10']);
-const objetivos = cartas.objetivos.map(o => ({ id: o.id, texto: o.texto, pts: o.pts, verifica: MANUAL.has(o.id) ? 'manual' : 'auto' }));
+// Texto que o jogo mostra quando a regra conferida difere do texto de cartas.json (Módulo 4)
+const TEXTO_JOGO = { 'ECO-O05': 'Ajude a resolver 2 crises na partida. Só contam crises resolvidas (atenuada não vale).' };
+const objetivos = cartas.objetivos.map(o => ({ id: o.id, texto: TEXTO_JOGO[o.id] || o.texto, pts: o.pts, verifica: MANUAL.has(o.id) ? 'manual' : 'auto' }));
 
 // Ícones inline (Tabler, sem metadados c2pa).
 const icDir = path.join(__dirname, '..', 'ferramentas', 'assets', 'icons');
