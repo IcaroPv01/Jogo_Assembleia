@@ -149,11 +149,11 @@
   },
   {
    "carta": "evento",
+   "id": "ECO-F01",
+   "titulo": "Crise financeira de 2008",
    "tipo": "fixa",
-   "id": "E01",
-   "titulo": "Crise Financeira de 2008",
    "ano": "2008",
-   "descricao": "Colapso do mercado imobiliário dos EUA arrasta bancos e bolsas do mundo todo: recessão e desemprego global.",
+   "descricao": "Quebra do banco Lehman Brothers (15/09/2008) e crise dos títulos hipotecários (subprime) nos EUA espalha recessão e desemprego pelo mundo.",
    "topicos_debate": [
     "(a definir)"
    ],
@@ -165,11 +165,11 @@
   },
   {
    "carta": "evento",
+   "id": "ECO-A01",
+   "titulo": "Quebra da Bolsa de Nova York",
    "tipo": "aleatoria",
-   "id": "E02",
-   "titulo": "Crise de 1929",
    "ano": "1929",
-   "descricao": "Quebra da Bolsa de Nova York inicia a Grande Depressão.",
+   "descricao": "Quedas na Bolsa de NY (24 e 29/10/1929) levam à Grande Depressão.",
    "topicos_debate": [
     "(a definir)"
    ],
@@ -177,16 +177,15 @@
    "pts_resolver": 5,
    "pts_atenuar": 3,
    "icone": "chart-line",
-   "natureza": "crise",
    "provisorio": true
   },
   {
    "carta": "evento",
+   "id": "ECO-A02",
+   "titulo": "Pandemia de Covid-19",
    "tipo": "aleatoria",
-   "id": "E03",
-   "titulo": "Pandemia de COVID-19",
    "ano": "2020",
-   "descricao": "Fechamento de fronteiras e fábricas rompe cadeias de produção globais.",
+   "descricao": "OMS declara pandemia (11/03/2020). Comércio, produção e emprego param em vários países.",
    "topicos_debate": [
     "(a definir)"
    ],
@@ -194,33 +193,15 @@
    "pts_resolver": 5,
    "pts_atenuar": 3,
    "icone": "shield-check",
-   "natureza": "crise",
    "provisorio": true
   },
   {
    "carta": "evento",
-   "tipo": "aleatoria",
-   "id": "E04",
-   "titulo": "Choque do Petróleo",
-   "ano": "1979",
-   "descricao": "Alta brusca do petróleo gera inflação e recessão nos países importadores.",
-   "topicos_debate": [
-    "(a definir)"
-   ],
-   "requisito": "(a definir)",
-   "pts_resolver": 5,
-   "pts_atenuar": 3,
-   "icone": "flame",
-   "natureza": "crise",
-   "provisorio": true
-  },
-  {
-   "carta": "evento",
-   "tipo": "aleatoria",
-   "id": "E05",
+   "id": "ECO-A03",
    "titulo": "Crise de Suez",
+   "tipo": "aleatoria",
    "ano": "1956",
-   "descricao": "Disputa pelo controle do Canal de Suez ameaça o comércio mundial.",
+   "descricao": "Egito nacionaliza o Canal de Suez (26/07/1956). Reino Unido, França e Israel atacam; rota de petróleo fica ameaçada.",
    "topicos_debate": [
     "(a definir)"
    ],
@@ -228,16 +209,15 @@
    "pts_resolver": 5,
    "pts_atenuar": 3,
    "icone": "ship",
-   "natureza": "crise",
    "provisorio": true
   },
   {
    "carta": "evento",
-   "tipo": "aleatoria",
-   "id": "E06",
+   "id": "ECO-A04",
    "titulo": "Crise do Euro",
-   "ano": "2010",
-   "descricao": "Dívidas soberanas ameaçam a zona do euro.",
+   "tipo": "aleatoria",
+   "ano": "2010–2012",
+   "descricao": "Grécia revela rombo fiscal (2009); Portugal, Irlanda, Espanha e Itália entram em crise de dívida.",
    "topicos_debate": [
     "(a definir)"
    ],
@@ -245,50 +225,15 @@
    "pts_resolver": 5,
    "pts_atenuar": 3,
    "icone": "coin",
-   "natureza": "crise",
    "provisorio": true
   },
   {
    "carta": "evento",
+   "id": "ECO-A05",
+   "titulo": "Automação com IA e Renda Básica Universal",
    "tipo": "aleatoria",
-   "id": "E07",
-   "titulo": "Sustentabilidade das Dívidas Nacionais",
    "ano": "",
-   "descricao": "Países endividados enfrentam risco de calote e juros altos.",
-   "topicos_debate": [
-    "(a definir)"
-   ],
-   "requisito": "(a definir)",
-   "pts_resolver": 5,
-   "pts_atenuar": 3,
-   "icone": "scale",
-   "natureza": "crise",
-   "provisorio": true
-  },
-  {
-   "carta": "evento",
-   "tipo": "aleatoria",
-   "id": "E08",
-   "titulo": "Crise Demográfica",
-   "ano": "",
-   "descricao": "Envelhecimento da população pressiona a previdência e as contas públicas.",
-   "topicos_debate": [
-    "(a definir)"
-   ],
-   "requisito": "(a definir)",
-   "pts_resolver": 5,
-   "pts_atenuar": 3,
-   "icone": "users",
-   "natureza": "crise",
-   "provisorio": true
-  },
-  {
-   "carta": "evento",
-   "tipo": "aleatoria",
-   "id": "E09",
-   "titulo": "Automação e IA",
-   "ano": "",
-   "descricao": "A inteligência artificial dispara a produtividade, mas ameaça empregos. Renda básica universal?",
+   "descricao": "IA substitui trabalhadores em várias áreas. Países discutem renda básica para todos.",
    "topicos_debate": [
     "(a definir)"
    ],
@@ -296,16 +241,32 @@
    "pts_resolver": 5,
    "pts_atenuar": 3,
    "icone": "robot",
-   "natureza": "oportunidade",
+   "provisorio": true,
+   "natureza": "oportunidade"
+  },
+  {
+   "carta": "evento",
+   "id": "ECO-A06",
+   "titulo": "Sustentabilidade das dívidas nacionais",
+   "tipo": "aleatoria",
+   "ano": "",
+   "descricao": "Juros altos e dívida pública crescente travam gastos com saúde e educação.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "scale",
    "provisorio": true
   },
   {
    "carta": "evento",
+   "id": "ECO-A07",
+   "titulo": "Fintechs e pagamentos digitais",
    "tipo": "aleatoria",
-   "id": "E10",
-   "titulo": "Fintechs",
    "ano": "",
-   "descricao": "Novas tecnologias financeiras ampliam o crédito e desafiam os bancos tradicionais.",
+   "descricao": "Bancos digitais e pagamentos por aplicativo crescem. Governos discutem regras e proteção de dados.",
    "topicos_debate": [
     "(a definir)"
    ],
@@ -313,33 +274,32 @@
    "pts_resolver": 5,
    "pts_atenuar": 3,
    "icone": "currency-bitcoin",
-   "natureza": "oportunidade",
-   "provisorio": true
+   "provisorio": true,
+   "natureza": "oportunidade"
   },
   {
    "carta": "evento",
+   "id": "ECO-A08",
+   "titulo": "Crise demográfica e previdência",
    "tipo": "aleatoria",
-   "id": "E11",
-   "titulo": "Transição Energética",
    "ano": "",
-   "descricao": "Economia verde cria novos mercados e nova dependência econômica entre países.",
+   "descricao": "População envelhece e poucos trabalhadores sustentam muitos aposentados.",
    "topicos_debate": [
     "(a definir)"
    ],
    "requisito": "(a definir)",
    "pts_resolver": 5,
    "pts_atenuar": 3,
-   "icone": "leaf",
-   "natureza": "oportunidade",
+   "icone": "users",
    "provisorio": true
   },
   {
    "carta": "evento",
+   "id": "ECO-A09",
+   "titulo": "Taxação dos super-ricos",
    "tipo": "aleatoria",
-   "id": "E12",
-   "titulo": "Taxação dos Super-ricos",
    "ano": "",
-   "descricao": "Proposta de imposto global sobre grandes fortunas (Tobin tax e similares).",
+   "descricao": "Proposta de taxar grandes fortunas e transações financeiras (ideia da Tobin tax, de James Tobin, 1972).",
    "topicos_debate": [
     "(a definir)"
    ],
@@ -347,8 +307,25 @@
    "pts_resolver": 5,
    "pts_atenuar": 3,
    "icone": "cash",
-   "natureza": "oportunidade",
-   "provisorio": true
+   "provisorio": true,
+   "natureza": "oportunidade"
+  },
+  {
+   "carta": "evento",
+   "id": "ECO-A10",
+   "titulo": "Transição energética e dependência econômica",
+   "tipo": "aleatoria",
+   "ano": "",
+   "descricao": "Países que dependem de petróleo e gás sofrem ao migrar para energia limpa.",
+   "topicos_debate": [
+    "(a definir)"
+   ],
+   "requisito": "(a definir)",
+   "pts_resolver": 5,
+   "pts_atenuar": 3,
+   "icone": "leaf",
+   "provisorio": true,
+   "natureza": "oportunidade"
   },
   {
    "carta": "acao",
@@ -616,8 +593,71 @@
   },
   {
    "carta": "objetivo",
-   "id": "O01",
-   "texto": "(a definir) Ex.: terminar a partida com no máximo 1 crise ativa.",
+   "id": "ECO-O01",
+   "texto": "Termine a partida com pelo menos 2 acordos comerciais fechados com outros países.",
+   "pts": 3,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O02",
+   "texto": "Não pegue nenhum empréstimo na partida. Sua economia precisa fechar sem dívida nova.",
+   "pts": 3,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O03",
+   "texto": "Faça 1 proposta sua ser aprovada em voto em pelo menos 2 rodadas.",
+   "pts": 2,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O04",
+   "texto": "Troque cartas com 3 países diferentes.",
+   "pts": 2,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O05",
+   "texto": "Ajude a resolver 2 crises que você não criou (crises de outros países).",
+   "pts": 3,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O06",
+   "texto": "Proponha um imposto sobre grandes fortunas e faça ele passar em voto.",
+   "pts": 4,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O07",
+   "texto": "Impeça que uma crise seja resolvida: sua vitória é a crise não resolvida no fim.",
+   "pts": 4,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O08",
+   "texto": "Ajude a resolver pelo menos 2 crises na partida (crises resolvidas ou atenuadas com seu voto ou sua carta).",
+   "pts": 3,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O09",
+   "texto": "Termine a rodada 5 com pelo menos 3 ações de país ainda na mão.",
+   "pts": 2,
+   "provisorio": true
+  },
+  {
+   "carta": "objetivo",
+   "id": "ECO-O10",
+   "texto": "Leve seu país a uma parceria de energia limpa com outro país.",
    "pts": 3,
    "provisorio": true
   }
