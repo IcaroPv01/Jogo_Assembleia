@@ -24,6 +24,8 @@ jobs:
           npm install
           node gen_cartas.js economia_baralho.json
           python3 gen_pdf.py saida/economia
+          node gen_tabuleiro.js economia_baralho.json
+          python3 gen_pdf_tabuleiro.py saida/economia
       - run: |
           mkdir _site && cp -r ferramentas/saida/economia/. _site/
           mkdir -p _site/jogo && cp -r jogo/index.html jogo/css jogo/js jogo/dados jogo/assets _site/jogo/
