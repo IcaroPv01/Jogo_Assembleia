@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Logs das partidas do jogo online: qualquer pessoa pode CRIAR um log novo (tamanho limitado);
+    // só lê quem tem o código do log (não dá para listar); ninguém altera nem apaga pelo site.
+    match /logs/{logId} {
+      allow create: if request.resource.data.keys().hasOnly(['formato', 'versao', 'fase', 'rodada', 'pessoas', 'quando', 'json'])
+                    && request.resource.data.formato == 'assembleia-log-1'
+                    && request.resource.data.json is string
+                    && request.resource.data.json.size() < 400000;
+      allow get: if true;
+      allow list, update, delete: if false;
+    }
+  }
+}

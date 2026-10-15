@@ -14,11 +14,19 @@ const URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
   for (let g = 0; g < N; g++) {
     const pg = await br.newPage({ viewport: { width: 1600, height: 900 } });
     const erros = [];
+    // nuvem simulada: confere o que seria enviado ao Firestore (sem internet)
+    const enviados = [];
+    await pg.addInitScript(() => { window.FIREBASE_CFG = { apiKey: 'chave-teste', projectId: 'projeto-teste' }; });
+    await pg.route('https://firestore.googleapis.com/**', async route => {
+      const rq = route.request(); enviados.push({ url: rq.url(), corpo: rq.postDataJSON() });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ name: 'projects/projeto-teste/databases/(default)/documents/logs/CODIGO' + g }) });
+    });
     pg.on('pageerror', e => erros.push(e.message)); pg.on('console', m => { if (m.type() === 'error') erros.push(m.text()); });
     await pg.goto(URL);
     const shot = async n => { if (SHOTS && g === 0) { fs.mkdirSync(SHOTS, { recursive: true }); await pg.screenshot({ path: path.join(SHOTS, n + '.png') }); } };
     await shot('01-inicio');
     await pg.click('[data-a=iniciarDeck]'); await pg.click('[data-a=sortear]'); await pg.click(`[data-a=humanos][data-v="${HUMANOS[g % HUMANOS.length]}"]`); await shot('02-setup');
+    await pg.fill('input[data-i="0"]', 'Maria Secreta');
     await pg.click('[data-a=comecar]');
     let passos = 0, ult = '', vistos = new Set();
     for (; passos < 600; passos++) {
@@ -54,6 +62,16 @@ const URL = 'file://' + path.resolve(__dirname, '..', 'index.html');
       const lg = JSON.parse(fs.readFileSync(f, 'utf8'));
       if (!lg.detalhado || lg.eventos.length < 20 || !lg.final) erros.push('log baixado incompleto');
       if (SHOTS && g === 0) fs.copyFileSync(f, path.join(SHOTS, 'log-exemplo.json'));
+      // envio automático: 1 documento, no formato certo, sem o nome digitado
+      await pg.waitForFunction(() => /Código:/.test(document.body.innerText), null, { timeout: 5000 }).catch(() => erros.push('tela não mostrou o código do log'));
+      if (enviados.length !== 1) erros.push('envios à nuvem: ' + enviados.length);
+      else {
+        const e = enviados[0], f2 = e.corpo.fields;
+        if (!/projects\/projeto-teste\/databases\/\(default\)\/documents\/logs\?key=chave-teste$/.test(e.url)) erros.push('url da nuvem errada: ' + e.url);
+        if (f2.formato.stringValue !== 'assembleia-log-1' || !f2.json.stringValue || f2.json.stringValue.length > 400000) erros.push('documento da nuvem inválido');
+        if (/Maria Secreta/.test(f2.json.stringValue) || /Maria Secreta/.test(JSON.stringify(e.corpo))) erros.push('NOME VAZOU para a nuvem');
+        if (Object.keys(f2).sort().join() !== 'fase,formato,json,pessoas,quando,rodada,versao') erros.push('campos fora da regra: ' + Object.keys(f2));
+      }
     }
     const r = await pg.evaluate(() => ({ trilha: __jogo.U.S.trilha, meta: __jogo.U.S.final && __jogo.U.S.final.meta, vit: __jogo.U.S.final && __jogo.U.S.final.vencedores }));
     console.log(`partida ${g + 1} (${HUMANOS[g % HUMANOS.length]} pessoa(s)): fase ${fim}, ${passos} cliques, trilha ${r.trilha}, venc ${JSON.stringify(r.vit)}${erros.length ? ' ERROS: ' + erros.slice(0, 5).join(' | ') : ''}`);

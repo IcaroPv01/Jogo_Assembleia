@@ -1,7 +1,7 @@
 /* Interface "uma tela" (computador/projetor, passa-e-joga). Só desenha o estado do motor e envia ações.
  * Tudo que for privado (objetivo secreto, mão de cartas, voto fechado) fica atrás de uma tela de privacidade. */
 (function () {
-  const D = DADOS, E = Engine, B = Bot, R = E.R, C = Cartas, esc = C.esc;
+  const D = DADOS, E = Engine, B = Bot, N = Nuvem, R = E.R, C = Cartas, esc = C.esc;
   const KEY = 'assembleia.economia.v1';
   const $app = document.getElementById('app');
   const U = { tela: 'inicio', sel: [], nomes: ['', '', '', '', ''], bots: [false, false, false, false, false], botTroca: null, relogio: 'aviso', S: null, gateOk: null, modal: null,
@@ -25,13 +25,31 @@
   // ---- logs das partidas (ficam no navegador; botão "Baixar log" gera um arquivo para análise) ----
   const KEYLOGS = 'assembleia.economia.logs';
   function lerLogs() { try { const j = localStorage.getItem(KEYLOGS); return j ? JSON.parse(j) : []; } catch (e) { return []; } }
+  const idLog = S => S.seed + '-' + S.assentos.map(a => a.pais).join('');
+  function gravaLogs(l) { try { localStorage.setItem(KEYLOGS, JSON.stringify(l.slice(-5))); } catch (e) { /* sem armazenamento: tudo bem */ } }
   function arquiva(S) { // guarda o log de uma partida terminada (as 5 últimas), sem repetir
+    const id = idLog(S), l = lerLogs(), antigo = l.find(x => x.id === id);
+    gravaLogs(l.filter(x => x.id !== id).concat([{ id, quando: antigo ? antigo.quando : new Date().toISOString(), log: E.relatorio(D, S), nuvem: antigo ? antigo.nuvem : null }]));
+  }
+  // envia para a nuvem (Firestore) os logs que ainda não foram; sem internet ou sem configuração, fica pendente
+  let enviando = false;
+  async function enviaPendentes() {
+    if (enviando || !N.ativo()) return;
+    enviando = true;
     try {
-      const id = S.seed + '-' + S.assentos.map(a => a.pais).join('');
-      const l = lerLogs().filter(x => x.id !== id);
-      l.push({ id, quando: new Date().toISOString(), log: E.relatorio(D, S) });
-      localStorage.setItem(KEYLOGS, JSON.stringify(l.slice(-5)));
-    } catch (e) { /* sem armazenamento: tudo bem */ }
+      for (const x of lerLogs().filter(y => !y.nuvem)) {
+        const r = await N.enviar(x.log), l = lerLogs(), e = l.find(y => y.id === x.id);
+        if (e && r.ok) { e.nuvem = r.id; gravaLogs(l); }
+        render();
+      }
+    } finally { enviando = false; render(); }
+  }
+  function statusNuvem(S) {
+    if (!N.ativo()) return 'Envio automático do log desligado. Use "Baixar log desta partida".';
+    const x = lerLogs().find(y => y.id === idLog(S));
+    if (!x) return '';
+    if (x.nuvem) return `Log salvo na nuvem. Código: <b>${esc(x.nuvem)}</b>`;
+    return enviando ? 'Enviando o log…' : 'Não consegui enviar o log (sem internet?). Use "Baixar log desta partida"; tento de novo na próxima vez.';
   }
   function baixa(nomeArq, obj) {
     const a = document.createElement('a');
@@ -40,7 +58,7 @@
   }
   const stamp = () => new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
   function toast(t) { U.toast = t; setTimeout(() => { U.toast = null; render(); }, 3200); }
-  function A(a) { const r = E.acao(D, U.S, a); if (!r.ok) toast(r.erro); salva(); if (U.S.fase === 'fim') arquiva(U.S); render(); return r; }
+  function A(a) { const r = E.acao(D, U.S, a); if (!r.ok) toast(r.erro); salva(); if (U.S.fase === 'fim') { arquiva(U.S); enviaPendentes(); } render(); return r; }
 
   // ---------- relógio das fases (só aviso; decisoes.md 2.1) ----------
   const GRUPO = { presidencia: 'presidencia', crise: 'crise', debate: 'debate', troca: 'troca', jogar: 'jogar' };
@@ -403,6 +421,7 @@
         <td class="peq">${esc(l.objetivo.texto)}<br>${l.objetivo.verifica === 'manual' ? `<span class="mudo">A mesa confirma:</span> <button class="btn sim peq ${S.objManual[l.seat] ? 'sel' : ''}" data-a="confObj" data-s="${l.seat}" data-v="1">Cumpriu</button> <button class="btn nao peq ${S.objManual[l.seat] === false ? 'sel' : ''}" data-a="confObj" data-s="${l.seat}" data-v="0">Não</button>` : (l.cumpriu ? '<b class="dif">cumprido</b>' : '<b class="dif neg">não cumprido</b>')}</td>
         <td>${sinal(l.pontosObj)}</td><td>${sinal(l.bonus)}</td><td><b style="font-size:1.3em;color:var(--ouro)">${l.total}</b></td></tr>`).join('')}</table>
       <p class="peq mudo">Empate: vence quem ajudou a resolver mais crises; se continuar empatado, dividem a vitória.</p>
+      <p class="peq mudo">${statusNuvem(S)}</p>
       <div class="acoes"><button class="btn grande" data-a="jogarNovo">Jogar de novo</button><button class="btn" data-a="baixarLog">Baixar log desta partida</button><button class="btn sec" data-a="menuSair">Menu inicial</button></div>`;
   }
 
@@ -491,7 +510,7 @@
     jogarNovo() { U.S = null; U.tela = 'setup'; U.sel = []; }, // o log da partida terminada continua guardado
     baixarLog() { baixa(`assembleia-log-${stamp()}-${U.S.seed}.json`, E.relatorio(D, U.S)); toast('Log baixado. Envie o arquivo no chat do projeto.'); },
     baixarTudo() {
-      const sv = carrega(), todos = lerLogs().map(x => x.log);
+      const sv = carrega(), todos = lerLogs().map(x => Object.assign({}, x.log, { nuvemId: x.nuvem || null }));
       if (sv && sv.S && !todos.some(l => l.seed === sv.S.seed && l.mesa.map(m => m.pais).join() === sv.S.assentos.map(a => a.pais).join())) todos.push(E.relatorio(D, sv.S)); // partida salva ainda não arquivada (em andamento ou de versão anterior)
       baixa(`assembleia-logs-${stamp()}.json`, { formato: 'assembleia-logs-1', partidas: todos });
     },
@@ -530,7 +549,7 @@
     if (foco) { const el = $app.querySelector(`input[data-i="${foco[0]}"]`); if (el) { el.focus(); try { el.setSelectionRange(foco[1], foco[1]); } catch (e) { /* ok */ } } }
     tick();
   }
-  { const sv = carrega(); if (sv && sv.S && sv.S.fase === 'fim') arquiva(sv.S); }
+  { const sv = carrega(); if (sv && sv.S && sv.S.fase === 'fim') arquiva(sv.S); setTimeout(enviaPendentes, 500); }
   window.__jogo = { U, E, D, A, render };
   render();
 })();
