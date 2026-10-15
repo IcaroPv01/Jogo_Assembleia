@@ -26,6 +26,8 @@ jobs:
           python3 gen_pdf.py saida/economia
       - run: |
           mkdir _site && cp -r ferramentas/saida/economia/. _site/
+          mkdir -p _site/jogo && cp -r jogo/index.html jogo/css jogo/js jogo/dados jogo/assets _site/jogo/
+          sed -i 's|<p><a style="color:#e8c27a" href="impressao.pdf">|<p><a style="color:#e8c27a" href="jogo/">▶ Jogar online</a> · <a style="color:#e8c27a" href="impressao.pdf">|' _site/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
