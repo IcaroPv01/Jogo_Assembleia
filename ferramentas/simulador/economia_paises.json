@@ -1,0 +1,64 @@
+{
+ "ITA": {
+  "f": 4,
+  "ab": {
+   "obj_bonus": 2,
+   "peso2": 1
+  }
+ },
+ "POR": {
+  "f": 2,
+  "ab": {
+   "hand4": 1,
+   "leve_auto": 1,
+   "obj_bonus": 1
+  }
+ },
+ "URU": {
+  "f": 1,
+  "ab": {
+   "seguro": 1,
+   "hand4": 1,
+   "leve_auto": 1
+  }
+ },
+ "EGI": {
+  "f": 3,
+  "ab": {
+   "pedagio": 1,
+   "hand4": 1,
+   "leve_auto": 1
+  }
+ },
+ "CHN": {
+  "f": 5,
+  "ab": {
+   "leve_bonus1x": 1,
+   "hand4": 1,
+   "leve_auto": 1
+  }
+ },
+ "EUA": {
+  "f": 6,
+  "ab": {
+   "leve_auto": 1,
+   "seguro": 1,
+   "obj_bonus": 1
+  }
+ },
+ "ARG": {
+  "f": 3,
+  "ab": {
+   "inicio": 1,
+   "obj_bonus": 1,
+   "inflacao": 1
+  }
+ },
+ "GRE": {
+  "f": 2,
+  "ab": {
+   "voto_extra": 1,
+   "inflacao": 1
+  }
+ }
+}
